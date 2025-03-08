@@ -124,3 +124,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Disable Grammarly extension on components that cause hydration issues */
+*:not(textarea):not(input)[data-gr-ext-installed],
+*:not(textarea):not(input)[data-new-gr-c-s-check-loaded] {
+  data-gr-ext-installed: none !important;
+  data-new-gr-c-s-check-loaded: none !important;
+}
+
+/* Add specific selectors if needed for components that have issues */
+html[data-gr-ext-installed],
+body[data-gr-ext-installed],
+div[data-gr-ext-installed],
+#__next[data-gr-ext-installed],
+html[data-new-gr-c-s-check-loaded],
+body[data-new-gr-c-s-check-loaded],
+div[data-new-gr-c-s-check-loaded],
+#__next[data-new-gr-c-s-check-loaded] {
+  data-gr-ext-installed: none !important;
+  data-new-gr-c-s-check-loaded: none !important;
+}
