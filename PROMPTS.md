@@ -2,7 +2,7 @@
 
 ## Prompt 1
 
-Create development steps in `Scratchpad` of `.cursorrules` to create a simple ecommerce website using TypeScript, Next.js 15, Shadcn, Lucide, Zod, Zustand, Resend, Uploadthing, Prisma, PostgreSQL, next-auth@beta, Stripe, and python Django for backend.
+Create development steps in `Scratchpad` of `.cursorrules` to create a simple ecommerce website using TypeScript, Next.js 15, Shadcn, Lucide, Zod, Zustand, Resend, Uploadthing, Prisma, PostgreSQL, next-auth@beta, Stripe..
 
 ## Prompt 2
 

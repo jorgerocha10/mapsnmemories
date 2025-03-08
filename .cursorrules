@@ -156,56 +156,7 @@
   - [ ] Payment methods management
   - [ ] Wishlist functionality
 
-### 4. Django Backend Development [ ]
-
-- [ ] Project Setup
-  - [ ] Set up Django project with `django-admin startproject`
-  - [ ] Create apps for different functionalities:
-    - [ ] Products
-    - [ ] Orders
-    - [ ] Users
-    - [ ] Payments
-  - [ ] Configure virtual environment and dependencies
-- [ ] Configure Django settings
-  - [ ] Database connection (PostgreSQL)
-  - [ ] CORS and CSRF settings
-  - [ ] Static and media file handling
-  - [ ] Django REST Framework configuration
-  - [ ] JWT authentication setup
-- [ ] Implement Django models
-  - [ ] User model (extending Django's User)
-  - [ ] Product model with variants
-  - [ ] Category model with hierarchy
-  - [ ] Order model with status tracking
-  - [ ] Review model with moderation
-  - [ ] Cart model for temporary storage
-- [ ] API Development
-  - [ ] Create DRF serializers for all models
-  - [ ] Implement ViewSets and routers
-  - [ ] Create API endpoints:
-    - [ ] Authentication (JWT-based)
-    - [ ] Product listing and details with filtering
-    - [ ] Cart management with session handling
-    - [ ] Order creation and tracking
-    - [ ] User profiles and order history
-    - [ ] Review submission and moderation
-  - [ ] API documentation with drf-spectacular
-- [ ] Admin Dashboard
-  - [ ] Customize Django Admin interface
-  - [ ] Add custom admin actions
-  - [ ] Implement dashboard widgets for sales, users, etc.
-- [ ] Stripe Integration
-  - [ ] Implement payment intent creation
-  - [ ] Configure webhook handlers
-  - [ ] Handle payment success/failure
-  - [ ] Implement subscription billing (if needed)
-- [ ] Deploy Django backend
-  - [ ] Set up hosting environment
-  - [ ] Configure Gunicorn and Nginx
-  - [ ] Set up static file serving
-  - [ ] Implement caching strategy
-
-### 5. Integration and API Communication [ ]
+### 4. Integration and API Communication [ ]
 
 - [ ] Next.js to Django API Integration
   - [ ] Set up API client in Next.js
@@ -229,7 +180,7 @@
     - [ ] Welcome emails
   - [ ] Set up email scheduling
 
-### 6. Advanced Features [ ]
+### 5. Advanced Features [ ]
 
 - [ ] Search and Discovery
   - [ ] Implement full-text search with PostgreSQL
@@ -250,7 +201,7 @@
   - [ ] Implement currency conversion
   - [ ] Add content localization
 
-### 7. Testing and Quality Assurance [ ]
+### 6. Testing and Quality Assurance [ ]
 
 - [ ] Frontend Testing
   - [ ] Unit testing with Jest
@@ -271,7 +222,7 @@
   - [ ] API response time testing
   - [ ] Frontend performance metrics
 
-### 8. Deployment and DevOps [ ]
+### 7. Deployment and DevOps [ ]
 
 - [ ] Production Environment Setup
   - [ ] Configure production settings
@@ -290,7 +241,7 @@
   - [ ] Disaster recovery plan
   - [ ] Data archiving policy
 
-### 9. Documentation [ ]
+### 8. Documentation [ ]
 
 - [ ] Technical Documentation
   - [ ] API documentation
