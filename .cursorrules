@@ -88,31 +88,31 @@
   - [x] Categories (T-shirts, jeans, and shoes)
   - [x] Products (2 in T-shirts, 1 in Jeans, 1 in Shoes)
   - [x] Sample users (admin and regular user)
-- [ ] Implement NextAuth.js authentication:
-  - [ ] Email/Password authentication
-  - [ ] OAuth providers (Google)
-  - [ ] JWT handling and session persistence
-  - [ ] Protected routes and middleware
-  - [ ] Role-based access control
+- [x] Implement NextAuth.js authentication:
+  - [x] Email/Password authentication
+  - [x] OAuth providers (Google)
+  - [x] JWT handling and session persistence
+  - [x] Protected routes and middleware
+  - [x] Role-based access control
 
 ### 3. Core Features - Frontend Development [ ]
 
 - [ ] Layout and Design System
-  - [ ] Create responsive layout with Shadcn UI
-  - [ ] Implement dark/light mode
-  - [ ] Design consistent component library
-  - [ ] Create global styles and theme variables
+  - [x] Create responsive layout with Shadcn UI
+  - [x] Implement dark/light mode
+  - [x] Design consistent component library
+  - [x] Create global styles and theme variables
 - [ ] Home Layout and Navigation
-  - [ ] Create `(home)` folder in `app` directory
-  - [ ] Header with logo, search bar, and navigation
-  - [ ] Mobile-responsive navigation menu
-  - [ ] Footer with links and social media
+  - [x] Create `(home)` folder in `app` directory
+  - [x] Header with logo, search bar, and navigation
+  - [x] Mobile-responsive navigation menu
+  - [x] Footer with links and social media
 - [ ] Homepage
-  - [ ] Hero section with featured products
-  - [ ] Banner carousel using Shadcn carousel
-  - [ ] Latest products section with filtering
-  - [ ] Categories showcase
-  - [ ] Newsletter signup
+  - [x] Hero section with featured products
+  - [x] Banner carousel using Shadcn carousel
+  - [x] Latest products section with filtering
+  - [x] Categories showcase
+  - [x] Newsletter signup
 - [ ] Products Catalog
   - [ ] Sidebar with categories and filters
   - [ ] Search results with sorting options
