@@ -1,0 +1,310 @@
+# Cursor Rules
+
+## Instructions
+
+- Record fixes for mistakes or corrections to avoid repetition in the `Lessons` section.
+- Organize thoughts and plan steps before starting a task in the `Scratchpad` section.
+- Clear old tasks if necessary.
+- Use todo markers for progress tracking:
+  - `[x]` Completed tasks
+  - `[ ]` Pending tasks
+- Update Scratchpad after completing subtasks.
+- Reflect and plan after milestones for better task management.
+- Always refer to Scratchpad before planning the next step.
+
+## Lessons
+
+1. Use `npx shadcn@latest add [component]` instead of `npx shadcn-ui@latest add [component]` when installing Shadcn UI components.
+2. In Next.js 14+, page props params must be typed as a Promise. Example:
+   ```typescript
+   type tParams = Promise<{ id: string }>
+   interface PageProps {
+     params: tParams
+   }
+   ```
+   Then await the params in the component:
+   ```typescript
+   export default async function Page(props: PageProps) {
+     const { id } = await props.params
+   }
+   ```
+3. Use `const session = await auth()` instead of `const session = await getServerSession(authOptions)` for Next.js authentication. The new `auth()` function is the recommended way to get the session in Next.js Auth v5.
+4. When importing `useRouter` from 'next/navigation', the component must be marked as a client component using the `'use client'` directive at the top of the file, as this hook only works on the client side.
+
+## Scratchpad
+
+### 1. Project Setup and Configuration [ ]
+
+- [x] Initialize Next.js 15 project with TypeScript
+  - [x] Use `npx create-next-app@latest --typescript` with recommended settings
+  - [x] Set up app router structure with proper folders (app, components, lib, etc.)
+  - [x] Configure metadata and SEO settings
+- [x] Set up project structure and folders
+  - [x] Create organized folder structure: components, lib, hooks, types, utils
+  - [x] Set up proper naming conventions and file organization
+- [x] Configure ESLint and Prettier
+  - [x] Add specific rules for TypeScript and Next.js
+  - [x] Set up pre-commit hooks with Husky
+- [ ] Install and configure dependencies:
+  - [x] Shadcn UI setup
+    - [x] Install with `npx shadcn-ui@latest init`
+    - [x] Set up component theming and customization
+    - [x] Add core components: Button, Card, Dialog, Form, Input, etc.
+  - [x] Lucide icons integration
+  - [x] Zod setup for form validation and API type safety
+  - [x] Zustand store configuration
+    - [ ] Create cart store
+    - [ ] Create user preferences store
+  - [ ] Resend email service integration
+  - [ ] Uploadthing for product image uploads
+  - [ ] Prisma ORM setup
+    - [ ] Initialize Prisma with `npx prisma init`
+    - [ ] Configure database connection
+  - [ ] NextAuth.js beta configuration
+    - [ ] Set up authentication providers
+    - [ ] Configure session handling
+  - [ ] Stripe integration
+    - [ ] Set up webhook endpoints
+    - [ ] Configure test environment
+
+### 2. Database and Authentication [ ]
+
+- [ ] Set up PostgreSQL database
+  - [ ] Local development setup
+  - [ ] Connection string configuration
+  - [ ] Database migrations strategy
+- [ ] Configure Prisma schema:
+  - [ ] User model
+    - [ ] Profile information
+    - [ ] Address information
+    - [ ] Payment methods
+  - [ ] Product model
+    - [ ] Title, description, pricing
+    - [ ] Images, variants
+    - [ ] Inventory management
+  - [ ] Category model
+    - [ ] Hierarchical categories
+    - [ ] Category metadata
+  - [ ] Order model
+    - [ ] Order items
+    - [ ] Status tracking
+    - [ ] Payment information
+  - [ ] Review model
+    - [ ] Ratings and comments
+    - [ ] Moderation system
+  - [ ] Cart model
+    - [ ] Cart items
+    - [ ] Price calculations
+  - [ ] Relationships between models
+- [ ] Implement NextAuth.js authentication:
+  - [ ] Email/Password authentication
+  - [ ] OAuth providers (Google)
+  - [ ] JWT handling and session persistence
+  - [ ] Protected routes and middleware
+  - [ ] Role-based access control
+
+### 3. Core Features - Frontend Development [ ]
+
+- [ ] Layout and Design System
+  - [ ] Create responsive layout with Shadcn UI
+  - [ ] Implement dark/light mode
+  - [ ] Design consistent component library
+  - [ ] Create global styles and theme variables
+- [ ] Home Layout and Navigation
+  - [ ] Create `(home)` folder in `app` directory
+  - [ ] Header with logo, search bar, and navigation
+  - [ ] Mobile-responsive navigation menu
+  - [ ] Footer with links and social media
+- [ ] Homepage
+  - [ ] Hero section with featured products
+  - [ ] Banner carousel using Shadcn carousel
+  - [ ] Latest products section with filtering
+  - [ ] Categories showcase
+  - [ ] Newsletter signup
+- [ ] Products Catalog
+  - [ ] Sidebar with categories and filters
+  - [ ] Search results with sorting options
+  - [ ] Product grid with pagination
+  - [ ] Filter system with price ranges, categories, etc.
+  - [ ] Skeleton loading states
+- [ ] Product Detail Pages
+  - [ ] Create product detail page layout
+  - [ ] Implement image gallery with thumbnails
+  - [ ] Product information section:
+    - [ ] Title, price, description
+    - [ ] Stock status and variants
+    - [ ] Add to cart button with quantity selector
+  - [ ] Reviews and ratings section:
+    - [ ] Star rating component
+    - [ ] Review listing with pagination
+    - [ ] Add review form for authenticated users
+  - [ ] Related products carousel
+- [ ] Shopping Cart and Checkout
+  - [ ] Cart modal/slide-over component
+  - [ ] Cart page with item management
+  - [ ] Add/remove items with quantity controls
+  - [ ] Persistent cart with localStorage and server sync
+  - [ ] Multi-step checkout process:
+    - [ ] Shipping information with address form
+    - [ ] Payment options integration (Stripe Elements)
+    - [ ] Order summary and confirmation
+  - [ ] Order tracking system
+- [ ] User Dashboard
+  - [ ] Profile management
+  - [ ] Order history with status tracking
+  - [ ] Address book management
+  - [ ] Payment methods management
+  - [ ] Wishlist functionality
+
+### 4. Django Backend Development [ ]
+
+- [ ] Project Setup
+  - [ ] Set up Django project with `django-admin startproject`
+  - [ ] Create apps for different functionalities:
+    - [ ] Products
+    - [ ] Orders
+    - [ ] Users
+    - [ ] Payments
+  - [ ] Configure virtual environment and dependencies
+- [ ] Configure Django settings
+  - [ ] Database connection (PostgreSQL)
+  - [ ] CORS and CSRF settings
+  - [ ] Static and media file handling
+  - [ ] Django REST Framework configuration
+  - [ ] JWT authentication setup
+- [ ] Implement Django models
+  - [ ] User model (extending Django's User)
+  - [ ] Product model with variants
+  - [ ] Category model with hierarchy
+  - [ ] Order model with status tracking
+  - [ ] Review model with moderation
+  - [ ] Cart model for temporary storage
+- [ ] API Development
+  - [ ] Create DRF serializers for all models
+  - [ ] Implement ViewSets and routers
+  - [ ] Create API endpoints:
+    - [ ] Authentication (JWT-based)
+    - [ ] Product listing and details with filtering
+    - [ ] Cart management with session handling
+    - [ ] Order creation and tracking
+    - [ ] User profiles and order history
+    - [ ] Review submission and moderation
+  - [ ] API documentation with drf-spectacular
+- [ ] Admin Dashboard
+  - [ ] Customize Django Admin interface
+  - [ ] Add custom admin actions
+  - [ ] Implement dashboard widgets for sales, users, etc.
+- [ ] Stripe Integration
+  - [ ] Implement payment intent creation
+  - [ ] Configure webhook handlers
+  - [ ] Handle payment success/failure
+  - [ ] Implement subscription billing (if needed)
+- [ ] Deploy Django backend
+  - [ ] Set up hosting environment
+  - [ ] Configure Gunicorn and Nginx
+  - [ ] Set up static file serving
+  - [ ] Implement caching strategy
+
+### 5. Integration and API Communication [ ]
+
+- [ ] Next.js to Django API Integration
+  - [ ] Set up API client in Next.js
+  - [ ] Implement API request hooks
+  - [ ] Create data fetching patterns with SWR/React Query
+  - [ ] Handle authentication token management
+- [ ] State Management with Zustand
+  - [ ] Create stores for different data domains
+  - [ ] Implement persistent state with localStorage
+  - [ ] Optimize re-renders with selective subscriptions
+- [ ] Real-time Features
+  - [ ] Set up WebSockets for notifications
+  - [ ] Implement real-time cart updates
+  - [ ] Create order status tracking
+- [ ] Email System with Resend
+  - [ ] Design email templates
+  - [ ] Implement transactional emails:
+    - [ ] Order confirmations
+    - [ ] Shipping updates
+    - [ ] Password reset
+    - [ ] Welcome emails
+  - [ ] Set up email scheduling
+
+### 6. Advanced Features [ ]
+
+- [ ] Search and Discovery
+  - [ ] Implement full-text search with PostgreSQL
+  - [ ] Add faceted filtering
+  - [ ] Create product recommendations
+- [ ] Performance Optimization
+  - [ ] Image optimization with Next.js Image
+  - [ ] Implement Incremental Static Regeneration for product pages
+  - [ ] Add caching strategies for API responses
+  - [ ] Optimize bundle size and code splitting
+- [ ] Analytics and Reporting
+  - [ ] Integrate analytics tracking
+  - [ ] Create sales dashboard
+  - [ ] Implement user behavior tracking
+  - [ ] Build reporting system for admins
+- [ ] Internationalization
+  - [ ] Set up multi-language support
+  - [ ] Implement currency conversion
+  - [ ] Add content localization
+
+### 7. Testing and Quality Assurance [ ]
+
+- [ ] Frontend Testing
+  - [ ] Unit testing with Jest
+  - [ ] Component testing with React Testing Library
+  - [ ] Integration testing
+  - [ ] E2E testing with Playwright or Cypress
+- [ ] Backend Testing
+  - [ ] Django unit tests
+  - [ ] API endpoint testing
+  - [ ] Integration tests
+- [ ] Security Auditing
+  - [ ] Authentication security review
+  - [ ] API endpoint security
+  - [ ] CSRF/XSS prevention
+  - [ ] Input validation
+- [ ] Performance Testing
+  - [ ] Load testing
+  - [ ] API response time testing
+  - [ ] Frontend performance metrics
+
+### 8. Deployment and DevOps [ ]
+
+- [ ] Production Environment Setup
+  - [ ] Configure production settings
+  - [ ] Set up environment variables
+  - [ ] Implement secure secrets management
+- [ ] CI/CD Pipeline
+  - [ ] Set up GitHub Actions or similar
+  - [ ] Implement automated testing
+  - [ ] Configure deployment automation
+- [ ] Monitoring and Logging
+  - [ ] Error tracking with Sentry
+  - [ ] Performance monitoring
+  - [ ] Setup logging and alerting
+- [ ] Backup and Recovery
+  - [ ] Database backup strategy
+  - [ ] Disaster recovery plan
+  - [ ] Data archiving policy
+
+### 9. Documentation [ ]
+
+- [ ] Technical Documentation
+  - [ ] API documentation
+  - [ ] Architecture overview
+  - [ ] Database schema documentation
+- [ ] User Documentation
+  - [ ] Admin user guide
+  - [ ] Customer user guide
+  - [ ] FAQ and help center content
+- [ ] Development Guides
+  - [ ] Setup instructions
+  - [ ] Contribution guidelines
+  - [ ] Coding standards and practices
+- [ ] Maintenance Documentation
+  - [ ] Deployment procedures
+  - [ ] Backup and restore instructions
+  - [ ] Troubleshooting guide
