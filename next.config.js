@@ -10,6 +10,10 @@ const nextConfig = {
     //   bodySizeLimit: '2mb',
     // },
   },
+
+  // Ensure client-side navigations work correctly
+  trailingSlash: false,
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig; 

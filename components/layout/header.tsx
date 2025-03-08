@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const mainNavItems = [
   {
     title: "Home",
-    href: "/",
+    href: "/home",
   },
   {
     title: "Shop",
@@ -50,7 +50,7 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[80%] sm:w-[350px]">
               <div className="px-2 py-6">
-                <Link href="/" className="flex items-center space-x-2 font-bold">
+                <Link href="/home" className="flex items-center space-x-2 font-bold">
                   Maps & Memories
                 </Link>
                 <nav className="mt-6 flex flex-col space-y-3">
@@ -74,7 +74,7 @@ export default function Header() {
           </Sheet>
         </div>
 
-        <Link href="/" className="flex items-center space-x-2 font-bold">
+        <Link href="/home" className="flex items-center space-x-2 font-bold">
           Maps & Memories
         </Link>
 

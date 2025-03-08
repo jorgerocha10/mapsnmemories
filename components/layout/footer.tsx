@@ -48,7 +48,7 @@ export default function Footer() {
       <div className="container px-4 py-12 md:py-16">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           <div className="col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-block font-bold">
+            <Link href="/home" className="inline-block font-bold">
               Maps & Memories
             </Link>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">

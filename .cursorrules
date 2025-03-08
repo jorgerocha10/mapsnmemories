@@ -30,6 +30,7 @@
    ```
 3. Use `const session = await auth()` instead of `const session = await getServerSession(authOptions)` for Next.js authentication. The new `auth()` function is the recommended way to get the session in Next.js Auth v5.
 4. When importing `useRouter` from 'next/navigation', the component must be marked as a client component using the `'use client'` directive at the top of the file, as this hook only works on the client side.
+5. Avoid using route groups with parentheses (e.g., `(home)`) when deploying to Vercel, as they can cause build issues with client-reference-manifest files. Use standard routes (e.g., `/home`) instead to avoid deployment errors.
 
 ## Scratchpad
 
