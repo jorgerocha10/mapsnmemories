@@ -53,49 +53,41 @@
   - [x] Lucide icons integration
   - [x] Zod setup for form validation and API type safety
   - [x] Zustand store configuration
-    - [ ] Create cart store
-    - [ ] Create user preferences store
-  - [ ] Resend email service integration
-  - [ ] Uploadthing for product image uploads
-  - [ ] Prisma ORM setup
-    - [ ] Initialize Prisma with `npx prisma init`
-    - [ ] Configure database connection
-  - [ ] NextAuth.js beta configuration
-    - [ ] Set up authentication providers
-    - [ ] Configure session handling
-  - [ ] Stripe integration
-    - [ ] Set up webhook endpoints
-    - [ ] Configure test environment
+
 
 ### 2. Database and Authentication [ ]
 
-- [ ] Set up PostgreSQL database
-  - [ ] Local development setup
-  - [ ] Connection string configuration
-  - [ ] Database migrations strategy
-- [ ] Configure Prisma schema:
-  - [ ] User model
-    - [ ] Profile information
-    - [ ] Address information
-    - [ ] Payment methods
-  - [ ] Product model
-    - [ ] Title, description, pricing
-    - [ ] Images, variants
-    - [ ] Inventory management
-  - [ ] Category model
-    - [ ] Hierarchical categories
-    - [ ] Category metadata
-  - [ ] Order model
-    - [ ] Order items
-    - [ ] Status tracking
-    - [ ] Payment information
-  - [ ] Review model
-    - [ ] Ratings and comments
-    - [ ] Moderation system
-  - [ ] Cart model
-    - [ ] Cart items
-    - [ ] Price calculations
-  - [ ] Relationships between models
+- [x] Set up PostgreSQL database
+  - [x] Local development setup
+  - [x] Connection string configuration
+  - [x] Database migrations strategy
+- [x] Configure Prisma schema:
+  - [x] User model
+    - [x] Profile information
+    - [x] Address information
+    - [x] Payment methods
+  - [x] Product model
+    - [x] Title, description, pricing
+    - [x] Images, variants
+    - [x] Inventory management
+  - [x] Category model
+    - [x] Hierarchical categories
+    - [x] Category metadata
+  - [x] Order model
+    - [x] Order items
+    - [x] Status tracking
+    - [x] Payment information
+  - [x] Review model
+    - [x] Ratings and comments
+    - [x] Moderation system
+  - [x] Cart model
+    - [x] Cart items
+    - [x] Price calculations
+  - [x] Relationships between models
+- [x] Seed sample data
+  - [x] Categories (T-shirts, jeans, and shoes)
+  - [x] Products (2 in T-shirts, 1 in Jeans, 1 in Shoes)
+  - [x] Sample users (admin and regular user)
 - [ ] Implement NextAuth.js authentication:
   - [ ] Email/Password authentication
   - [ ] OAuth providers (Google)
