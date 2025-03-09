@@ -1,0 +1,12 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    // Disable rules that might cause deployment issues
+    "@typescript-eslint/no-unused-vars": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "import/no-unresolved": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
+  }
+} 

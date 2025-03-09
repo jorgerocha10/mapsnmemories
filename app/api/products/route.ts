@@ -1,5 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+
+// Interface for where clause
+interface ProductWhereClause {
+  isVisible: boolean;
+  price: {
+    gte: number;
+    lte: number;
+  };
+  categoryId?: {
+    in: string[];
+  };
+  OR?: Array<{
+    name?: { contains: string; mode: 'insensitive' };
+    description?: { contains: string; mode: 'insensitive' };
+  }>;
+}
+
+// Type for order by clause
+type ProductOrderByClause = 
+  | { price: 'asc' | 'desc' }
+  | { name: 'asc' | 'desc' }
+  | { createdAt: 'desc' };
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,27 +37,31 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     
     // Create the where clause
-    const where: any = {
+    const where: ProductWhereClause = {
       isVisible: true,
       price: {
         gte: minPrice,
         lte: maxPrice,
       },
-      ...(categories.length > 0 && {
-        categoryId: {
-          in: categories,
-        },
-      }),
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
     };
     
+    // Add category filter if provided
+    if (categories.length > 0) {
+      where.categoryId = {
+        in: categories,
+      };
+    }
+    
+    // Add search filter if provided
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
     // Set up sorting
-    let orderBy: any = {};
+    let orderBy: ProductOrderByClause;
     switch (sort) {
       case 'price-asc':
         orderBy = { price: 'asc' };

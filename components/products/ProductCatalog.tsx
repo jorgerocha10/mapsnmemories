@@ -7,7 +7,6 @@ import ProductSort from './ProductSort';
 import { PaginationButton } from '@/components/ui/pagination-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { prisma } from '@/lib/prisma';
 import { Product, Category } from '@prisma/client';
 
 interface ProductWithImages extends Product {
@@ -95,7 +94,7 @@ export default function ProductCatalog({
     };
     
     fetchData();
-  }, [filters, searchParams.search, page, pageSize]);
+  }, [filters, searchParams.search, page, pageSize, categories.length]);
   
   const updateFilters = (newFilters: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -110,7 +109,7 @@ export default function ProductCatalog({
         <div className="lg:hidden">
           <ProductSort
             currentSort={filters.sort}
-            onSortChange={(sort) => updateFilters({ sort })}
+            onSortChange={(sort: string) => updateFilters({ sort })}
           />
           <Separator className="my-4" />
         </div>
@@ -134,7 +133,7 @@ export default function ProductCatalog({
           
           <ProductSort
             currentSort={filters.sort}
-            onSortChange={(sort) => updateFilters({ sort })}
+            onSortChange={(sort: string) => updateFilters({ sort })}
           />
         </div>
         

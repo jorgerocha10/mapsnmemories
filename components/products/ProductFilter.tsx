@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -33,9 +32,6 @@ export default function ProductFilter({
   maxPrice,
   onFilterChange,
 }: ProductFilterProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  
   const [priceRange, setPriceRange] = useState<[number, number]>([minPrice, maxPrice]);
   
   // Update price range when props change

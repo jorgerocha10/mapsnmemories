@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { StarIcon } from 'lucide-react';
-import { Review, User } from '@prisma/client';
+import { Review } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';

@@ -130,7 +130,7 @@
     - [x] Star rating component
     - [x] Review listing with pagination
     - [x] Add review form for authenticated users
-  - [ ] Related products carousel
+  - [x] Related products carousel
 - [ ] Shopping Cart and Checkout
   - [ ] Cart modal/slide-over component
   - [ ] Cart page with item management

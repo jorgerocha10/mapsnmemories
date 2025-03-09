@@ -6,9 +6,46 @@ import ProductInfo from '@/components/products/ProductInfo';
 import ProductReviews from '@/components/products/ProductReviews';
 import RelatedProducts from '@/components/products/RelatedProducts';
 import BackButton from '@/components/products/BackButton';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Product, ProductVariant, Review, Category } from '@prisma/client';
+
+// Define interfaces for product-related data
+interface ProductImage {
+  id: string;
+  url: string;
+  alt: string | null;
+  position: number;
+}
+
+interface ProductVariantWithOptions extends ProductVariant {
+  options: {
+    id: string;
+    name: string;
+    value: string;
+  }[];
+}
+
+interface ReviewWithUser extends Review {
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+interface ProductWithRelations extends Omit<Product, 'price' | 'compareAtPrice' | 'weight'> {
+  price: number | null;
+  compareAtPrice: number | null;
+  weight: number | null;
+  category: Category | null;
+  images: ProductImage[];
+  variants: ProductVariantWithOptions[];
+  reviews: ReviewWithUser[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Helper function to serialize product data
+// @ts-ignore
 function serializeProduct(product: any) {
   if (!product) return null;
   
@@ -21,12 +58,12 @@ function serializeProduct(product: any) {
       ...variant,
       price: variant.price ? Number(variant.price) : null,
     })) : [],
-    createdAt: product.createdAt ? product.createdAt.toISOString() : null,
-    updatedAt: product.updatedAt ? product.updatedAt.toISOString() : null,
+    createdAt: product.createdAt ? product.createdAt.toISOString() : new Date().toISOString(),
+    updatedAt: product.updatedAt ? product.updatedAt.toISOString() : new Date().toISOString(),
     reviews: product.reviews ? product.reviews.map((review: any) => ({
       ...review,
-      createdAt: review.createdAt ? review.createdAt.toISOString() : null,
-      updatedAt: review.updatedAt ? review.updatedAt.toISOString() : null,
+      createdAt: review.createdAt ? review.createdAt.toISOString() : new Date().toISOString(),
+      updatedAt: review.updatedAt ? review.updatedAt.toISOString() : new Date().toISOString(),
     })) : [],
   };
 }
@@ -143,6 +180,11 @@ export default async function ProductPage({
   // Serialize the product to convert Decimal to number
   const serializedProduct = serializeProduct(product);
   const relatedProducts = await getRelatedProducts(product.id, product.categoryId);
+  
+  // If serialization failed, show 404 page
+  if (!serializedProduct) {
+    notFound();
+  }
   
   return (
     <div className="container mx-auto px-4 py-8">

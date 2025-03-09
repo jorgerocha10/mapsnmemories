@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/utils';
-import { ShoppingCart, Check, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Product, ProductVariant, Category } from '@prisma/client';
