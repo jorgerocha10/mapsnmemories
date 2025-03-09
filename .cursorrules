@@ -113,23 +113,23 @@
   - [x] Latest products section with filtering
   - [x] Categories showcase
   - [x] Newsletter signup
-- [ ] Products Catalog
-  - [ ] Sidebar with categories and filters
-  - [ ] Search results with sorting options
-  - [ ] Product grid with pagination
-  - [ ] Filter system with price ranges, categories, etc.
-  - [ ] Skeleton loading states
-- [ ] Product Detail Pages
-  - [ ] Create product detail page layout
-  - [ ] Implement image gallery with thumbnails
-  - [ ] Product information section:
-    - [ ] Title, price, description
-    - [ ] Stock status and variants
-    - [ ] Add to cart button with quantity selector
-  - [ ] Reviews and ratings section:
-    - [ ] Star rating component
-    - [ ] Review listing with pagination
-    - [ ] Add review form for authenticated users
+- [x] Products Catalog
+  - [x] Sidebar with categories and filters
+  - [x] Search results with sorting options
+  - [x] Product grid with pagination
+  - [x] Filter system with price ranges, categories, etc.
+  - [x] Skeleton loading states
+- [x] Product Detail Pages
+  - [x] Create product detail page layout
+  - [x] Implement image gallery with thumbnails
+  - [x] Product information section:
+    - [x] Title, price, description
+    - [x] Stock status and variants
+    - [x] Add to cart button with quantity selector
+  - [x] Reviews and ratings section:
+    - [x] Star rating component
+    - [x] Review listing with pagination
+    - [x] Add review form for authenticated users
   - [ ] Related products carousel
 - [ ] Shopping Cart and Checkout
   - [ ] Cart modal/slide-over component
@@ -148,29 +148,70 @@
   - [ ] Payment methods management
   - [ ] Wishlist functionality
 
-### 4. Integration and API Communication [ ]
+### 4. Admin Dashboard [ ]
 
-- [ ] Next.js to Django API Integration
-  - [ ] Set up API client in Next.js
-  - [ ] Implement API request hooks
-  - [ ] Create data fetching patterns with SWR/React Query
-  - [ ] Handle authentication token management
-- [ ] State Management with Zustand
-  - [ ] Create stores for different data domains
-  - [ ] Implement persistent state with localStorage
-  - [ ] Optimize re-renders with selective subscriptions
-- [ ] Real-time Features
-  - [ ] Set up WebSockets for notifications
-  - [ ] Implement real-time cart updates
-  - [ ] Create order status tracking
-- [ ] Email System with Resend
-  - [ ] Design email templates
-  - [ ] Implement transactional emails:
-    - [ ] Order confirmations
-    - [ ] Shipping updates
-    - [ ] Password reset
-    - [ ] Welcome emails
-  - [ ] Set up email scheduling
+- [ ] Admin authentication and authorization
+- [ ] Dashboard overview:
+  - [ ] Layout and Structure:
+    - [ ] Create admin dashboard layout with sidebar navigation
+    - [ ] Implement responsive grid for dashboard widgets
+    - [ ] Add loading states and error boundaries
+  - [ ] Key Metrics Cards:
+    - [ ] Total revenue widget with real data
+    - [ ] Total orders widget with real data
+    - [ ] Total customers widget with real data
+    - [ ] Average order value widget with real data
+  - [ ] Sales Analytics:
+    - [ ] Revenue Chart:
+      - [ ] Implement line chart using Recharts
+      - [ ] Add daily/weekly/monthly/yearly filters
+      - [ ] Show revenue trends over time
+      - [ ] Add tooltip with detailed information
+    - [ ] Order Statistics:
+      - [ ] Bar chart for order volume
+      - [ ] Order status distribution
+      - [ ] Peak ordering times
+  - [ ] Recent Orders Table:
+    - [ ] Implement data table with columns:
+      - [ ] Order ID
+      - [ ] Customer name
+      - [ ] Order total
+      - [ ] Status
+      - [ ] Date
+    - [ ] Add sorting and filtering
+    - [ ] Quick actions (view, process, update status)
+  - [ ] Low Stock Alerts:
+    - Products with stock below threshold
+    - Quick restock actions
+    - Stock level indicators
+  - [ ] Top Products:
+    - Best-selling products list
+    - Revenue by product
+    - Stock status
+  - [ ] Customer Insights:
+    - New vs returning customers
+    - Customer acquisition chart
+    - Top customers by revenue
+  - [ ] Real-time Updates:
+    - Implement WebSocket connection
+    - Live order notifications
+    - Stock level updates
+  - [ ] Export and Reports:
+    - CSV/PDF export functionality
+    - Custom date range selection
+    - Report generation
+- [ ] Product management:
+  - CRUD operations
+  - Bulk actions
+  - Image upload (Uploadthing)
+- [ ] Order management:
+  - Order processing
+  - Status updates
+  - Refund handling
+- [ ] User management:
+  - Customer list
+  - Admin privileges
+  - User actions
 
 ### 5. Advanced Features [ ]
 
