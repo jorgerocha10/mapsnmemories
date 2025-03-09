@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
-import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Menu, Search, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
+import { CartSlideOver } from "@/components/cart/CartSlideOver";
 
 const mainNavItems = [
   {
@@ -142,12 +142,7 @@ export default function Header() {
             </Button>
           )}
           <ThemeToggle />
-          <Link href="/cart">
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Cart</span>
-            </Button>
-          </Link>
+          <CartSlideOver />
           <Link href="/dashboard">
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />

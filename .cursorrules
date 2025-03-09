@@ -131,11 +131,11 @@
     - [x] Review listing with pagination
     - [x] Add review form for authenticated users
   - [ ] Related products carousel
-- [ ] Shopping Cart and Checkout
-  - [ ] Cart modal/slide-over component
-  - [ ] Cart page with item management
-  - [ ] Add/remove items with quantity controls
-  - [ ] Persistent cart with localStorage and server sync
+- [x] Shopping Cart and Checkout
+  - [x] Cart modal/slide-over component
+  - [x] Cart page with item management
+  - [x] Add/remove items with quantity controls
+  - [x] Persistent cart with localStorage and server sync
   - [ ] Multi-step checkout process:
     - [ ] Shipping information with address form
     - [ ] Payment options integration (Stripe Elements)
