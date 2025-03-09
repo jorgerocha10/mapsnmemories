@@ -17,15 +17,15 @@
 1. Use `npx shadcn@latest add [component]` instead of `npx shadcn-ui@latest add [component]` when installing Shadcn UI components.
 2. In Next.js 14+, page props params must be typed as a Promise. Example:
    ```typescript
-   type tParams = Promise<{ id: string }>
+   type tParams = Promise<{ id: string }>;
    interface PageProps {
-     params: tParams
+     params: tParams;
    }
    ```
    Then await the params in the component:
    ```typescript
    export default async function Page(props: PageProps) {
-     const { id } = await props.params
+     const { id } = await props.params;
    }
    ```
 3. Use `const session = await auth()` instead of `const session = await getServerSession(authOptions)` for Next.js authentication. The new `auth()` function is the recommended way to get the session in Next.js Auth v5.
@@ -54,7 +54,6 @@
   - [x] Lucide icons integration
   - [x] Zod setup for form validation and API type safety
   - [x] Zustand store configuration
-
 
 ### 2. Database and Authentication [ ]
 
@@ -103,12 +102,12 @@
   - [x] Implement dark/light mode
   - [x] Design consistent component library
   - [x] Create global styles and theme variables
-- [ ] Home Layout and Navigation
+- [x] Home Layout and Navigation
   - [x] Create `(home)` folder in `app` directory
   - [x] Header with logo, search bar, and navigation
   - [x] Mobile-responsive navigation menu
   - [x] Footer with links and social media
-- [ ] Homepage
+- [x] Homepage
   - [x] Hero section with featured products
   - [x] Banner carousel using Shadcn carousel
   - [x] Latest products section with filtering

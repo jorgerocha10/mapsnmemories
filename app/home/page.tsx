@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import BannerCarousel from "@/components/home/BannerCarousel";
 
 // Add explicit exports to help with route recognition
 export const dynamic = 'force-static';
@@ -25,6 +26,11 @@ export default function HomePage() {
           <Button variant="outline" size="lg">Learn More</Button>
         </div>
       </div>
+      
+      {/* Banner Carousel */}
+      <section className="mb-16">
+        <BannerCarousel />
+      </section>
       
       <section className="mb-16">
         <h2 className="mb-6 text-2xl font-bold">Featured Products</h2>

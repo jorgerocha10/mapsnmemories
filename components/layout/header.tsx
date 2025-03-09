@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,8 @@ const mainNavItems = [
     href: "/home",
   },
   {
-    title: "Shop",
-    href: "/shop",
+    title: "Products",
+    href: "/products",
   },
   {
     title: "Categories",
@@ -35,7 +36,18 @@ const mainNavItems = [
 
 export default function Header() {
   const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
   const pathname = usePathname();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setShowSearchBar(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -86,7 +98,7 @@ export default function Header() {
                   href={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-foreground/80",
-                    pathname === item.href
+                    pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/home")
                       ? "text-foreground"
                       : "text-foreground/60"
                   )}
@@ -100,13 +112,16 @@ export default function Header() {
 
         <div className="flex flex-1 items-center justify-end space-x-2">
           {showSearchBar ? (
-            <div className="relative flex w-full max-w-[200px] items-center md:max-w-[300px]">
+            <form onSubmit={handleSearch} className="relative flex w-full max-w-[200px] items-center md:max-w-[300px]">
               <Input
                 type="search"
                 placeholder="Search products..."
                 className="pr-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="absolute right-0"
@@ -115,7 +130,7 @@ export default function Header() {
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close search</span>
               </Button>
-            </div>
+            </form>
           ) : (
             <Button
               variant="ghost"
@@ -127,14 +142,18 @@ export default function Header() {
             </Button>
           )}
           <ThemeToggle />
-          <Button variant="ghost" size="icon">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Cart</span>
-          </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-            <span className="sr-only">Account</span>
-          </Button>
+          <Link href="/cart">
+            <Button variant="ghost" size="icon">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Cart</span>
+            </Button>
+          </Link>
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Account</span>
+            </Button>
+          </Link>
         </div>
       </div>
     </header>
