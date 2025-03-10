@@ -90,13 +90,13 @@ export function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link href="/account" className="cursor-pointer">
+                  <Link href="/dashboard" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>My Account</span>
+                    <span>My Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/account/orders" className="cursor-pointer">
+                  <Link href="/dashboard/orders" className="cursor-pointer">
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     <span>My Orders</span>
                   </Link>
@@ -182,12 +182,12 @@ export function Navbar() {
                       </div>
                       <div className="space-y-2">
                         <Button asChild variant="ghost" className="w-full justify-start" size="sm">
-                          <Link href="/account" onClick={() => setIsMobileMenuOpen(false)}>
-                            My Account
+                          <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                            My Dashboard
                           </Link>
                         </Button>
                         <Button asChild variant="ghost" className="w-full justify-start" size="sm">
-                          <Link href="/account/orders" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Link href="/dashboard/orders" onClick={() => setIsMobileMenuOpen(false)}>
                             My Orders
                           </Link>
                         </Button>

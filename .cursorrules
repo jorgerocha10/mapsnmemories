@@ -141,12 +141,12 @@
   - [x] Payment options integration (Stripe Elements)
   - [x] Order summary and confirmation
   - [x] Order tracking system
-- [ ] User Dashboard
-  - [ ] Profile management
-  - [ ] Order history with status tracking
-  - [ ] Address book management
-  - [ ] Payment methods management
-  - [ ] Wishlist functionality
+- [x] User Dashboard
+  - [x] Profile management
+  - [x] Order history with status tracking
+  - [x] Address book management
+  - [x] Payment methods management
+  - [x] Wishlist functionality
 
 ### 4. Admin Dashboard [ ]
 

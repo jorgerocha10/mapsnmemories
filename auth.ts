@@ -59,6 +59,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     })
   ],
   callbacks: {
+    async session({ session, token }) {
+      // Send properties to the client
+      if (session?.user && token.sub) {
+        session.user.id = token.sub as string
+      }
+      return session
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
@@ -72,8 +79,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login"
+    signIn: "/auth/signin",
+    error: "/auth/signin"
   },
   session: {
     strategy: "jwt",
