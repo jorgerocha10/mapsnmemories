@@ -1,9 +1,8 @@
-"use client"
+'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,29 +17,35 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { UserPlus, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { signIn } from 'next-auth/react';
 
 // Form schema with validation
 const formSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-// Client component that uses the search params
-function SignInContent() {
+export default function SignUpPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Initialize form with React Hook Form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
@@ -48,26 +53,44 @@ function SignInContent() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: values.email,
-        password: values.password,
-        callbackUrl,
+      // Create new user account
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        }),
       });
 
-      if (!result?.ok) {
-        setError(result?.error || 'Failed to sign in');
-        return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create account');
       }
 
-      // Redirect to the callback URL or home page
-      router.push(callbackUrl);
-      router.refresh();
+      // Account created successfully
+      setSuccess('Your account has been created successfully! Redirecting to sign in...');
+      
+      // Auto-sign in after successful registration
+      setTimeout(async () => {
+        await signIn('credentials', {
+          redirect: true,
+          email: values.email,
+          password: values.password,
+          callbackUrl: '/',
+        });
+      }, 2000);
+      
     } catch (error) {
-      console.error('Sign in error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      console.error('Sign up error:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +100,9 @@ function SignInContent() {
     <div className="container max-w-md mx-auto py-12 px-4">
       <div className="space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Sign In</h1>
+          <h1 className="text-3xl font-bold">Create an Account</h1>
           <p className="text-muted-foreground mt-2">
-            Enter your credentials to access your account
+            Sign up to start shopping and track your orders
           </p>
         </div>
 
@@ -91,8 +114,34 @@ function SignInContent() {
           </Alert>
         )}
 
+        {success && (
+          <Alert className="bg-green-50 border-green-200">
+            <AlertCircle className="h-4 w-4 text-green-500" />
+            <AlertTitle className="text-green-800">Success</AlertTitle>
+            <AlertDescription className="text-green-700">{success}</AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="John Doe" 
+                      disabled={isLoading}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="email"
@@ -123,7 +172,27 @@ function SignInContent() {
                     <Input 
                       placeholder="******" 
                       type="password"
-                      autoComplete="current-password"
+                      autoComplete="new-password"
+                      disabled={isLoading}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="******" 
+                      type="password"
+                      autoComplete="new-password"
                       disabled={isLoading}
                       {...field} 
                     />
@@ -141,12 +210,12 @@ function SignInContent() {
               {isLoading ? (
                 <span className="flex items-center gap-1">
                   <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></span>
-                  <span>Signing in...</span>
+                  <span>Creating account...</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  <span>Sign In</span>
+                  <UserPlus className="h-4 w-4" />
+                  <span>Sign Up</span>
                 </span>
               )}
             </Button>
@@ -156,19 +225,19 @@ function SignInContent() {
         <div className="text-center space-y-4">
           <Separator />
           <p className="text-sm">
-            Don't have an account?{' '}
+            Already have an account?{' '}
             <Link 
-              href="/auth/signup" 
+              href="/auth/signin" 
               className="font-semibold text-primary hover:underline"
             >
-              Sign Up
+              Sign In
             </Link>
           </p>
 
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => signIn('google', { callbackUrl })}
+            onClick={() => signIn('google', { callbackUrl: '/' })}
             disabled={isLoading}
           >
             <svg 
@@ -186,23 +255,10 @@ function SignInContent() {
                 d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
               ></path>
             </svg>
-            Sign in with Google
+            Sign up with Google
           </Button>
         </div>
       </div>
     </div>
-  );
-}
-
-// Main page component with Suspense boundary
-export default function SignInPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    }>
-      <SignInContent />
-    </Suspense>
   );
 } 

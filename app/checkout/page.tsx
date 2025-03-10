@@ -7,13 +7,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
-import CartSummary from '@/components/cart/CartSummary';
 import CheckoutForm from '@/components/checkout/CheckoutForm';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, itemCount, loading, error, refreshCart } = useCart();
-  const [checkoutStep, setCheckoutStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   
   // Use ref to prevent multiple refreshes
   const hasRefreshed = useRef(false);
@@ -26,12 +24,9 @@ export default function CheckoutPage() {
     }
   }, [refreshCart]);
   
-  // If cart is empty, redirect to cart page
-  useEffect(() => {
-    if (!loading && items.length === 0 && hasRefreshed.current) {
-      router.push('/cart');
-    }
-  }, [loading, items.length, router]);
+  // Remove the redirection to cart page if cart is empty
+  // This was causing issues with the payment flow
+  // When payment succeeds, cart is cleared before the redirect happens
   
   if (loading && !hasRefreshed.current) {
     return (
@@ -60,24 +55,8 @@ export default function CheckoutPage() {
         </div>
       )}
       
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <CheckoutForm
-            checkoutStep={checkoutStep}
-            setCheckoutStep={setCheckoutStep}
-          />
-        </div>
-        
-        <div className="lg:col-span-1">
-          <div className="rounded-lg border bg-card p-6 shadow-sm sticky top-24">
-            <h2 className="font-semibold text-lg mb-2">Order Summary</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              {itemCount} {itemCount === 1 ? 'item' : 'items'}
-            </p>
-            <Separator className="mb-4" />
-            <CartSummary />
-          </div>
-        </div>
+      <div>
+        <CheckoutForm />
       </div>
     </div>
   );

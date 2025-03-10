@@ -1,62 +1,76 @@
 import { NextRequest, NextResponse } from "next/server";
-import { registerUser } from "@/lib/user-actions";
+import { hash } from "bcryptjs";
 import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
+
+// Initialize Prisma client
+const prisma = new PrismaClient();
 
 // Explicitly use Node.js runtime, not Edge
 export const runtime = "nodejs";
 
 // Define validation schema
 const registerSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  name: z.string().optional(),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await request.json();
     
-    // Validate the request body
+    // Validate request body
     const result = registerSchema.safeParse(body);
     
     if (!result.success) {
       return NextResponse.json(
-        { error: "Invalid input", details: result.error.format() },
+        { message: "Invalid input data", errors: result.error.errors },
         { status: 400 }
       );
     }
     
-    const { email, password, name } = result.data;
+    const { name, email, password } = result.data;
     
-    // Register the user
-    const user = await registerUser({ email, password, name });
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
     
-    return NextResponse.json(
-      { message: "User registered successfully", user },
-      { status: 201 }
-    );
-  } catch (error: unknown) {
-    console.error("Registration error:", error);
-    
-    // Type guard for errors with message property
-    if (error instanceof Error) {
-      // Check if it's a known error (like user already exists)
-      if (error.message === "User with this email already exists") {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 409 }
-        );
-      }
-      
+    if (existingUser) {
       return NextResponse.json(
-        { error: "Something went wrong", details: error.message },
-        { status: 500 }
+        { message: "User with this email already exists" },
+        { status: 409 }
       );
     }
     
-    // Fallback for non-Error objects
+    // Hash the password
+    const hashedPassword = await hash(password, 10);
+    
+    // Create the user
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+    
+    // Return the new user (excluding the password)
+    const { password: _, ...userWithoutPassword } = newUser;
+    
     return NextResponse.json(
-      { error: "An unexpected error occurred" },
+      { 
+        message: "User registered successfully",
+        user: userWithoutPassword,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Registration error:", error);
+    
+    return NextResponse.json(
+      { message: "Something went wrong with registration" },
       { status: 500 }
     );
   }
