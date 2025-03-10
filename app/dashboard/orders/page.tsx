@@ -28,27 +28,27 @@ export const metadata = {
 
 export default async function OrdersPage() {
   const session = await auth()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // First get the user ID from the email
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   const userId = user.id
-  
+
   // Fetch user's orders
   const orders = await prisma.order.findMany({
     where: { userId },
@@ -61,7 +61,7 @@ export default async function OrdersPage() {
       },
     },
   })
-  
+
   // Helper function to get order status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -81,7 +81,7 @@ export default async function OrdersPage() {
         return <Badge variant="outline">{status}</Badge>
     }
   }
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -90,7 +90,7 @@ export default async function OrdersPage() {
           View and track your order history
         </p>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Order History</CardTitle>

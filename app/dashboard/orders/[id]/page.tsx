@@ -38,31 +38,31 @@ interface OrderDetailPageProps {
 
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
   const session = await auth()
-  
+
   if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/dashboard/orders")
   }
-  
+
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // First get the user ID from the email
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true, name: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   const userId = user.id
   const orderId = params.id
-  
+
   // Fetch order details
   const order = await prisma.order.findUnique({
-    where: { 
+    where: {
       id: orderId,
       userId, // Ensure the order belongs to the user
     },
@@ -84,11 +84,11 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       },
     },
   })
-  
+
   if (!order) {
     notFound()
   }
-  
+
   // Helper function to get order status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -108,7 +108,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
         return <Badge variant="outline">{status}</Badge>
     }
   }
-  
+
   // Get tracking steps based on order status
   const getTrackingSteps = () => {
     const steps = [
@@ -117,12 +117,12 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       { status: 'SHIPPED', label: 'Shipped', icon: Truck, completed: ['SHIPPED', 'DELIVERED'].includes(order.status) },
       { status: 'DELIVERED', label: 'Delivered', icon: CheckCircle, completed: ['DELIVERED'].includes(order.status) },
     ]
-    
+
     return steps
   }
-  
+
   const trackingSteps = getTrackingSteps()
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           {getStatusBadge(order.status)}
         </div>
       </div>
-      
+
       {/* Order tracking */}
       {!['CANCELLED', 'REFUNDED'].includes(order.status) && (
         <Card>
@@ -154,26 +154,24 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <div className="relative flex items-center justify-between">
               {/* Progress bar */}
               <div className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 bg-muted">
-                <div 
-                  className="h-full bg-primary transition-all" 
-                  style={{ 
-                    width: `${
-                      trackingSteps.filter(step => step.completed).length / 
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{
+                    width: `${trackingSteps.filter(step => step.completed).length /
                       (trackingSteps.length - 1) * 100
-                    }%` 
+                      }%`
                   }}
                 />
               </div>
-              
+
               {/* Steps */}
               {trackingSteps.map((step, index) => (
                 <div key={step.status} className="relative flex flex-col items-center">
-                  <div 
-                    className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 ${
-                      step.completed 
-                        ? 'border-primary bg-primary text-primary-foreground' 
+                  <div
+                    className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 ${step.completed
+                        ? 'border-primary bg-primary text-primary-foreground'
                         : 'border-muted bg-background'
-                    }`}
+                      }`}
                   >
                     <step.icon className="h-5 w-5" />
                   </div>
@@ -184,7 +182,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </CardContent>
         </Card>
       )}
-      
+
       {/* Order items */}
       <Card>
         <CardHeader>
@@ -237,7 +235,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Order summary and shipping info */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Order summary */}
@@ -273,7 +271,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Shipping info */}
         <Card>
           <CardHeader>

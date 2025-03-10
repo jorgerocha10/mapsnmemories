@@ -103,14 +103,6 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, []);
   
-  // Fetch cart on component mount, but only once
-  useEffect(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      fetchCart().catch(console.error);
-    }
-  }, [fetchCart]);
-  
   // Add item to cart
   const addItem = async (productId: string, quantity: number, variantId?: string) => {
     try {
@@ -201,15 +193,19 @@ export function CartProvider({ children }: CartProviderProps) {
     try {
       setCart(prevCart => ({ ...prevCart, loading: true, error: null }));
       
-      const response = await fetch(`/api/cart/items?id=${cartItemId}`, {
+      const response = await fetch(`/api/cart/items?id=${encodeURIComponent(cartItemId)}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // No body needed since we're sending the ID as a query parameter
       });
       
       if (!response.ok) {
         throw new Error('Failed to remove item from cart');
       }
       
-      // Update cart state locally
+      // Update the cart state locally
       setCart(prevCart => ({
         ...prevCart,
         items: prevCart.items.filter(item => item.id !== cartItemId),
@@ -236,13 +232,41 @@ export function CartProvider({ children }: CartProviderProps) {
   // Clear cart (for checkout completion)
   const clearCart = async () => {
     try {
-      // Implementation depends on your API design
-      // For now, we'll just clear the state locally
+      setCart(prevCart => ({
+        ...prevCart,
+        loading: true,
+      }));
+      
+      // Make an API call to clear the cart on the server
+      const response = await fetch('/api/cart/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear cart on server');
+      }
+      
+      // Remove the cart session cookie
+      try {
+        setCookie('cartSessionId', '', {
+          maxAge: 0, // Expire immediately
+          path: '/',
+        });
+      } catch (cookieError) {
+        console.error('Error clearing cart cookie:', cookieError);
+        // Continue even if cookie clearing fails
+      }
+      
+      // Clear the local state
       setCart({
         ...initialCartState,
         loading: false,
       });
       
+      console.log('Cart successfully cleared at all levels');
       return true;
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -258,11 +282,41 @@ export function CartProvider({ children }: CartProviderProps) {
   // Refresh cart data - this function can be called from other components
   // We need to make sure it doesn't cause infinite loops
   const refreshCart = useCallback(async () => {
-    // Only refresh if we've already done the initial fetch
-    if (initialFetchDone.current) {
-      await fetchCart().catch(console.error);
+    try {
+      await fetchCart();
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
     }
   }, [fetchCart]);
+
+  // Now that all cart functions are defined, set up the effect to fetch the cart on mount
+  useEffect(() => {
+    if (!initialFetchDone.current) {
+      initialFetchDone.current = true;
+      
+      // Check if we're on a confirmation page or have a payment_intent in URL
+      // which would indicate a checkout has just completed
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        const isConfirmationPage = url.pathname.includes('/checkout/confirmation');
+        const hasPaymentIntent = url.searchParams.has('payment_intent');
+        
+        // If we're on a confirmation page or have payment_intent, clear the cart first
+        if (isConfirmationPage || hasPaymentIntent) {
+          console.log('Checkout completion detected, clearing cart');
+          clearCart().then(() => {
+            console.log('Cart cleared on page load due to checkout completion');
+          }).catch(console.error);
+        } else {
+          // Normal fetch if not on confirmation page
+          fetchCart().catch(console.error);
+        }
+      } else {
+        // Normal fetch if not in browser
+        fetchCart().catch(console.error);
+      }
+    }
+  }, [fetchCart, clearCart]);
   
   // Combine cart state and actions
   const value = {

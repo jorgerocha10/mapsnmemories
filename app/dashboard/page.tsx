@@ -20,26 +20,26 @@ export const metadata = {
 
 export default async function ProfilePage() {
   const session = await auth()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   // Check if we have a user email from the session
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // Fetch user with profile by email instead of ID
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     include: { profile: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,7 +48,7 @@ export default async function ProfilePage() {
           Manage your account settings and profile information
         </p>
       </div>
-      
+
       <div className="grid gap-6">
         {/* User avatar and basic info */}
         <Card>
@@ -63,7 +63,7 @@ export default async function ProfilePage() {
             </div>
           </CardHeader>
         </Card>
-        
+
         {/* Profile edit form */}
         <Card>
           <CardHeader>

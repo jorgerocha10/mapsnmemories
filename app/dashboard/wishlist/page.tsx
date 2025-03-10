@@ -20,27 +20,27 @@ export const metadata = {
 
 export default async function WishlistPage() {
   const session = await auth()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // First get the user ID from the email
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   const userId = user.id
-  
+
   // Fetch user's wishlist items with product details
   const wishlistItems = await prisma.wishlistItem.findMany({
     where: { userId },
@@ -53,7 +53,7 @@ export default async function WishlistPage() {
     },
     orderBy: { createdAt: 'desc' },
   })
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -62,7 +62,7 @@ export default async function WishlistPage() {
           View and manage your saved items
         </p>
       </div>
-      
+
       {wishlistItems.length === 0 ? (
         <Card>
           <CardHeader>

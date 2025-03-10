@@ -12,11 +12,15 @@ export default function OrderSummary() {
   // Calculate subtotal (sum of items price * quantity)
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
   
-  // Fixed shipping cost - changed to match what shows in the UI ($500.00)
-  const shippingCost = items.length > 0 ? 50000 : 0; // $500.00
+  // Calculate shipping cost (free over $100, otherwise $10)
+  const shippingCost = subtotal >= 100 ? 0 : 10;
   
-  // Calculate tax (for display purposes)
-  const tax = Math.round(subtotal * 0.1); // 10% tax - adjusted to match screenshot
+  // Calculate tax (8% sales tax)
+  const taxRate = 0.08;
+  const tax = subtotal * taxRate;
+
+  // Calculate final total
+  const finalTotal = subtotal + shippingCost + tax;
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -34,46 +38,60 @@ export default function OrderSummary() {
               <div key={item.id} className="flex items-center gap-4">
                 <div className="relative h-16 w-16 rounded-md overflow-hidden border bg-muted">
                   {/* Display product image if available */}
-                  <div className="flex h-full w-full items-center justify-center bg-secondary">
-                    <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                  </div>
+                  {item.productImage ? (
+                    <Image
+                      src={item.productImage}
+                      alt={item.productName}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    Product #{item.productId || item.id}
-                  </p>
+                  <h3 className="font-medium truncate">{item.productName}</h3>
                   <p className="text-sm text-muted-foreground">
                     Qty: {item.quantity}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">
-                    {formatCurrency(item.price)}
-                  </p>
+                  <p className="font-medium">{formatCurrency(item.price)}</p>
+                  {item.quantity > 1 && (
+                    <p className="text-sm text-muted-foreground">
+                      {formatCurrency(item.price * item.quantity)}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
           </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-sm">
-              <span>Subtotal</span>
+
+          <Separator className="mb-4" />
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subtotal</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>Shipping</span>
-              <span>{formatCurrency(shippingCost)}</span>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Shipping</span>
+              {shippingCost === 0 ? (
+                <span className="text-green-600">Free</span>
+              ) : (
+                <span>{formatCurrency(shippingCost)}</span>
+              )}
             </div>
-            <div className="flex justify-between text-sm">
-              <span>Tax</span>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tax (8%)</span>
               <span>{formatCurrency(tax)}</span>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>{formatCurrency(subtotal + shippingCost + tax)}</span>
+              <span>{formatCurrency(finalTotal)}</span>
             </div>
           </div>
         </>

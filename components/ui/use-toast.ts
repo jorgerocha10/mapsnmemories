@@ -23,16 +23,16 @@ export function useToast(): [ToastProps[], ToastActionType] {
   const addToast = useCallback((toast: Omit<ToastProps, 'id'>): string => {
     const id = uuidv4()
     const newToast = { ...toast, id }
-    
+
     setToasts((prev) => [...prev, newToast])
-    
+
     // Auto-dismiss toast after duration
     if (toast.duration !== 0) {
       setTimeout(() => {
         removeToast(id)
       }, toast.duration || 5000)
     }
-    
+
     return id
   }, [])
 

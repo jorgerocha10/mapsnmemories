@@ -20,46 +20,46 @@ export const metadata = {
 
 export default async function PaymentMethodsPage() {
   const session = await auth()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // First get the user ID from the email
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   const userId = user.id
-  
+
   // Fetch user's payment methods
   const paymentMethods = await prisma.paymentMethod.findMany({
     where: { userId },
     orderBy: { isDefault: 'desc' },
   })
-  
+
   // Helper function to mask card number
   const maskCardNumber = (accountNumber: string | null) => {
     if (!accountNumber) return 'xxxx-xxxx-xxxx-xxxx'
-    
+
     // Keep only the last 4 digits visible
     return `xxxx-xxxx-xxxx-${accountNumber.slice(-4)}`
   }
-  
+
   // Helper function to get card icon based on provider
   const getCardIcon = (provider: string) => {
     return <CreditCard className="h-6 w-6" />
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export default async function PaymentMethodsPage() {
           </Link>
         </Button>
       </div>
-      
+
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {paymentMethods.length === 0 ? (
           <Card className="col-span-full">

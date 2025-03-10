@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStripe, useElements, PaymentElement, AddressElement } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -12,16 +12,34 @@ import { formatCurrency } from '@/lib/utils';
 interface PaymentFormProps {
   onSuccess: () => void;
   onBack: () => void;
+  clientSecret: string;
 }
 
-export default function PaymentForm({ onSuccess, onBack }: PaymentFormProps) {
+export default function PaymentForm({ onSuccess, onBack, clientSecret }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
-  const { totalAmount } = useCart();
+  const { totalAmount, clearCart, id: cartId } = useCart();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [savePaymentMethod, setSavePaymentMethod] = useState(false);
+  
+  // This will help us detect if the payment succeeded but the redirect failed
+  useEffect(() => {
+    if (!stripe || !clientSecret) return;
+    
+    // Check the payment intent status
+    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+      if (paymentIntent?.status === 'succeeded') {
+        // If payment succeeded but we're still on this page (redirect failed),
+        // clear the cart and show success message
+        clearCart().then(() => {
+          console.log('Cart cleared after payment success (no redirect)');
+          onSuccess();
+        });
+      }
+    });
+  }, [stripe, clientSecret, clearCart, onSuccess]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +53,37 @@ export default function PaymentForm({ onSuccess, onBack }: PaymentFormProps) {
     setErrorMessage(null);
     
     try {
+      // Attempt to clear cart before redirecting
+      try {
+        // We do this in a separate try/catch to not block the payment flow
+        await clearCart();
+        console.log('Cart cleared before redirect');
+      } catch (clearError) {
+        console.error('Failed to clear cart before redirect:', clearError);
+        // Continue with payment even if cart clearing fails
+      }
+      
+      // Update the payment intent with cart information if needed
+      if (cartId) {
+        try {
+          await fetch('/api/checkout/payment-intent/update-metadata', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              clientSecret,
+              metadata: {
+                cartId,
+              },
+            }),
+          });
+        } catch (err) {
+          console.error('Failed to update payment intent metadata:', err);
+          // Continue with payment even if metadata update fails
+        }
+      }
+      
       // Confirm the payment
       const { error } = await stripe.confirmPayment({
         elements,
@@ -92,7 +141,7 @@ export default function PaymentForm({ onSuccess, onBack }: PaymentFormProps) {
             Back
           </Button>
           <Button type="submit" className="flex-1" disabled={!stripe || isProcessing}>
-            {isProcessing ? 'Processing...' : 'Pay Now'}
+            {isProcessing ? 'Processing...' : `Pay ${formatCurrency(totalAmount)}`}
           </Button>
         </div>
       </div>

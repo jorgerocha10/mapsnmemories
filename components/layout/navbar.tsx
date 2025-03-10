@@ -4,15 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import { 
-  ShoppingBag, 
-  Menu, 
-  X, 
-  User, 
-  LogOut, 
-  LogIn, 
+import {
+  ShoppingBag,
+  Menu,
+  X,
+  User,
+  LogOut,
+  LogIn,
   UserPlus,
-  ShoppingCart 
+  ShoppingCart
 } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
@@ -56,9 +56,8 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
+                }`}
             >
               {link.label}
             </Link>
@@ -102,7 +101,7 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => signOut({ callbackUrl: '/' })}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
@@ -164,9 +163,8 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`text-sm font-medium hover:text-primary ${
-                        isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
-                      }`}
+                      className={`text-sm font-medium hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
+                        }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {link.label}
@@ -191,9 +189,9 @@ export function Navbar() {
                             My Orders
                           </Link>
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-destructive hover:text-destructive" 
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-destructive hover:text-destructive"
                           size="sm"
                           onClick={() => {
                             setIsMobileMenuOpen(false);

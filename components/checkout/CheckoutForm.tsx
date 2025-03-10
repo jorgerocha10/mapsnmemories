@@ -24,7 +24,12 @@ export default function CheckoutForm() {
 
   const handlePaymentSuccess = () => {
     // Clear the cart after successful payment
-    clearCart();
+    clearCart().then(() => {
+      console.log('Cart cleared after successful payment');
+    }).catch(err => {
+      console.error('Failed to clear cart:', err);
+    });
+    
     // Redirect to confirmation page
     router.push('/checkout/confirmation');
   };
@@ -71,7 +76,13 @@ export default function CheckoutForm() {
 
           {currentStep === 'payment' && (
             <StripeProvider>
-              <PaymentForm onSuccess={handlePaymentSuccess} onBack={handleBack} />
+              {({ clientSecret }) => (
+                <PaymentForm 
+                  onSuccess={handlePaymentSuccess} 
+                  onBack={handleBack} 
+                  clientSecret={clientSecret} 
+                />
+              )}
             </StripeProvider>
           )}
         </div>

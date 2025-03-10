@@ -20,34 +20,34 @@ export const metadata = {
 
 export default async function AddressesPage() {
   const session = await auth()
-  
+
   if (!session?.user) {
     return null
   }
-  
+
   if (!session.user.email) {
     return <div>User email not found in session</div>
   }
-  
+
   // First get the user ID from the email
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true, name: true }
   })
-  
+
   if (!user) {
     return <div>User not found</div>
   }
-  
+
   const userId = user.id
   const userName = user.name || 'User'
-  
+
   // Fetch user's addresses
   const addresses = await prisma.address.findMany({
     where: { userId },
     orderBy: { isDefault: 'desc' },
   })
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -64,7 +64,7 @@ export default async function AddressesPage() {
           </Link>
         </Button>
       </div>
-      
+
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {addresses.length === 0 ? (
           <Card className="col-span-full">

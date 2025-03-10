@@ -13,8 +13,8 @@ type ToastContextType = {
 
 const ToastContext = createContext<ToastContextType>({
   toast: () => '',
-  dismiss: () => {},
-  clear: () => {},
+  dismiss: () => { },
+  clear: () => { },
 })
 
 export const useToastContext = () => useContext(ToastContext)

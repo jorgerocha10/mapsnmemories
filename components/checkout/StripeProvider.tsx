@@ -14,7 +14,7 @@ const stripePromise = loadStripe(
 );
 
 interface StripeProviderProps {
-  children: ReactNode;
+  children: ReactNode | ((props: { clientSecret: string }) => ReactNode);
 }
 
 export default function StripeProvider({ children }: StripeProviderProps) {
@@ -119,7 +119,9 @@ export default function StripeProvider({ children }: StripeProviderProps) {
 
   return (
     <Elements stripe={stripePromise} options={options}>
-      {children}
+      {typeof children === 'function' 
+        ? children({ clientSecret }) 
+        : children}
     </Elements>
   );
 } 

@@ -4,16 +4,21 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { useCart } from '@/context/CartContext';
+import { toast } from '@/components/ui/use-toast';
 
 // Client component that uses the search params
 function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { clearCart } = useCart();
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartCleared, setCartCleared] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get payment_intent and payment_intent_client_secret from URL
   const paymentIntentId = searchParams.get('payment_intent');
@@ -23,9 +28,49 @@ function OrderConfirmationContent() {
     // If we don't have payment info in the URL, this might not be a proper redirect
     if (!paymentIntentId || !paymentStatus) {
       setIsLoading(false);
+      setError('Missing payment information in URL');
       return;
     }
 
+    // Clear cart immediately if payment was successful
+    const handleCartClearing = async () => {
+      if (paymentStatus === 'succeeded' && !cartCleared) {
+        console.log('Starting aggressive cart clearing...');
+        
+        // Try multiple times to ensure the cart is cleared
+        let success = false;
+        for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+          try {
+            await clearCart();
+            setCartCleared(true);
+            console.log(`Cart cleared successfully on attempt ${attempt}`);
+            success = true;
+            
+            // Also make a direct API call as a backup
+            try {
+              await fetch('/api/cart/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              console.log('Additional direct API call to clear cart succeeded');
+            } catch (directApiError) {
+              console.error('Direct API call to clear cart failed:', directApiError);
+            }
+          } catch (err) {
+            console.error(`Failed to clear cart on attempt ${attempt}:`, err);
+            // Wait a bit before trying again
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+        }
+        
+        if (!success) {
+          console.error('All cart clearing attempts failed');
+        }
+      }
+    };
+    
     // Get order details based on payment intent ID
     const fetchOrderDetails = async () => {
       try {
@@ -33,14 +78,42 @@ function OrderConfirmationContent() {
         const response = await fetch(`/api/checkout/order?payment_intent=${paymentIntentId}`);
         
         if (!response.ok) {
-          throw new Error('Failed to fetch order details');
+          // Get more details about the error
+          let errorDetail = '';
+          try {
+            const errorData = await response.json();
+            errorDetail = errorData.details || errorData.message || '';
+          } catch (e) {
+            // If we can't parse the error JSON, use the status text
+            errorDetail = response.statusText;
+          }
+          
+          throw new Error(`Failed to fetch order details: ${errorDetail}`);
         }
         
         const data = await response.json();
+        
+        // Ensure shipping property exists to prevent null reference errors
+        if (!data.shipping) {
+          data.shipping = {
+            name: 'Customer',
+            address: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: '',
+          };
+        }
+        
         setOrderDetails(data);
+
+        // Clear cart after successfully getting order details
+        await handleCartClearing();
       } catch (error) {
         console.error('Error fetching order details:', error);
-        // If there's an error, create a fallback order with basic info
+        setError(error instanceof Error ? error.message : 'Unknown error occurred');
+        
+        // Create a fallback order with basic info
         setOrderDetails({
           id: 'ORD-' + Math.floor(Math.random() * 10000),
           date: new Date().toISOString(),
@@ -60,13 +133,42 @@ function OrderConfirmationContent() {
             country: '',
           },
         });
+        
+        // Still try to clear cart even if order details fetch fails
+        await handleCartClearing();
+        
+        // Show error toast
+        if (typeof window !== 'undefined') {
+          toast({
+            title: 'Error loading order details',
+            description: error instanceof Error ? error.message : 'Failed to load order information',
+            variant: 'destructive',
+          });
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchOrderDetails();
-  }, [paymentIntentId, paymentStatus]);
+    
+    // Add a fallback cart clearing mechanism - try again after a delay
+    // This helps in case the first attempts fail
+    const fallbackClearTimeout = setTimeout(() => {
+      if (!cartCleared && paymentStatus === 'succeeded') {
+        console.log('Running fallback cart clearing...');
+        clearCart().then(() => {
+          console.log('Fallback cart clearing succeeded');
+          setCartCleared(true);
+        }).catch(err => {
+          console.error('Even fallback cart clearing failed:', err);
+        });
+      }
+    }, 3000); // Wait 3 seconds before trying again
+    
+    // Clean up the timeout
+    return () => clearTimeout(fallbackClearTimeout);
+  }, [paymentIntentId, paymentStatus, clearCart, cartCleared]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -97,6 +199,7 @@ function OrderConfirmationContent() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="bg-destructive/10 rounded-lg p-6 text-center">
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
           <p className="mb-6 text-muted-foreground">
             We couldn't find any order information. This might be because:
@@ -106,6 +209,12 @@ function OrderConfirmationContent() {
             <li>There was an issue processing your payment</li>
             <li>The order information is still being processed</li>
           </ul>
+          {error && (
+            <div className="mb-6 p-4 bg-destructive/5 rounded-md text-sm text-left">
+              <p className="font-semibold">Error details:</p>
+              <p className="mt-1">{error}</p>
+            </div>
+          )}
           <Button asChild>
             <Link href="/products">Continue Shopping</Link>
           </Button>
@@ -113,6 +222,16 @@ function OrderConfirmationContent() {
       </div>
     );
   }
+
+  // Make sure shipping data exists
+  const shipping = orderDetails.shipping || {
+    name: 'Customer',
+    address: 'N/A',
+    city: 'N/A',
+    state: 'N/A',
+    postalCode: 'N/A',
+    country: 'N/A'
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -155,29 +274,35 @@ function OrderConfirmationContent() {
           <div>
             <h2 className="text-lg font-semibold mb-2">Shipping Address</h2>
             <div className="bg-muted rounded-md p-4">
-              <p>{orderDetails.shipping.name}</p>
-              <p>{orderDetails.shipping.address}</p>
+              <p>{shipping.name}</p>
+              <p>{shipping.address}</p>
               <p>
-                {orderDetails.shipping.city}, {orderDetails.shipping.state}{' '}
-                {orderDetails.shipping.postalCode}
+                {shipping.city}, {shipping.state}{' '}
+                {shipping.postalCode}
               </p>
-              <p>{orderDetails.shipping.country}</p>
+              <p>{shipping.country}</p>
             </div>
           </div>
 
           <div>
             <h2 className="text-lg font-semibold mb-2">Items</h2>
-            <div className="space-y-2">
-              {orderDetails.items.map((item: any) => (
-                <div key={item.id} className="bg-muted rounded-md p-4 flex justify-between">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+            {!orderDetails.items || orderDetails.items.length === 0 ? (
+              <div className="bg-muted rounded-md p-4 text-center text-muted-foreground">
+                No items found in this order.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {orderDetails.items.map((item: any) => (
+                  <div key={item.id} className="bg-muted rounded-md p-4 flex justify-between">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                    </div>
+                    <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
                   </div>
-                  <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
           
           <div>
@@ -189,10 +314,14 @@ function OrderConfirmationContent() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping:</span>
-                <span>{formatCurrency(orderDetails.shippingCost || 0)}</span>
+                {orderDetails.shippingCost === 0 ? (
+                  <span className="text-green-600">Free</span>
+                ) : (
+                  <span>{formatCurrency(orderDetails.shippingCost || 0)}</span>
+                )}
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax:</span>
+                <span className="text-muted-foreground">Tax (8%):</span>
                 <span>{formatCurrency(orderDetails.tax || 0)}</span>
               </div>
               <Separator className="my-2" />
@@ -205,7 +334,7 @@ function OrderConfirmationContent() {
 
           <div className="flex justify-between pt-4">
             <Button variant="outline" asChild>
-              <Link href="/account/orders">View All Orders</Link>
+              <Link href="/dashboard/orders">View All Orders</Link>
             </Button>
             <Button asChild>
               <Link href="/products">Continue Shopping</Link>

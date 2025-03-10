@@ -71,7 +71,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         title: 'Profile updated',
         description: 'Your profile has been updated successfully.',
       })
-      
+
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -104,7 +104,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="bio"
@@ -112,10 +112,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Tell us a little about yourself" 
-                  className="resize-none" 
-                  {...field} 
+                <Textarea
+                  placeholder="Tell us a little about yourself"
+                  className="resize-none"
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
@@ -125,7 +125,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="phone"
@@ -142,7 +142,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        
+
         <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Updating...' : 'Update profile'}
         </Button>

@@ -22,7 +22,7 @@ export const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
 )
 Toast.displayName = "Toast"
 
-interface ToastTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+interface ToastTitleProps extends React.HTMLAttributes<HTMLHeadingElement> { }
 
 export const ToastTitle = React.forwardRef<HTMLHeadingElement, ToastTitleProps>(
   ({ className, ...props }, ref) => (
@@ -31,7 +31,7 @@ export const ToastTitle = React.forwardRef<HTMLHeadingElement, ToastTitleProps>(
 )
 ToastTitle.displayName = "ToastTitle"
 
-interface ToastDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
+interface ToastDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> { }
 
 export const ToastDescription = React.forwardRef<HTMLParagraphElement, ToastDescriptionProps>(
   ({ className, ...props }, ref) => (
