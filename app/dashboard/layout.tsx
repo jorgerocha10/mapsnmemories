@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { User, Package, MapPin, CreditCard, Heart } from "lucide-react"
+import { User, Package } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -19,9 +19,6 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   const navItems = [
     { href: "/dashboard", icon: User, label: "Profile" },
     { href: "/dashboard/orders", icon: Package, label: "Orders" },
-    { href: "/dashboard/addresses", icon: MapPin, label: "Addresses" },
-    { href: "/dashboard/payment", icon: CreditCard, label: "Payment Methods" },
-    { href: "/dashboard/wishlist", icon: Heart, label: "Wishlist" },
   ]
 
   return (
