@@ -15,9 +15,10 @@ const stripePromise = loadStripe(
 
 interface StripeProviderProps {
   children: ReactNode | ((props: { clientSecret: string }) => ReactNode);
+  shippingData?: any;
 }
 
-export default function StripeProvider({ children }: StripeProviderProps) {
+export default function StripeProvider({ children, shippingData }: StripeProviderProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,15 +29,42 @@ export default function StripeProvider({ children }: StripeProviderProps) {
     // Create a payment intent when the component mounts
     const createPaymentIntent = async () => {
       try {
+        interface PaymentIntentPayload {
+          amount: number;
+          currency: string;
+          shipping?: {
+            name: string;
+            address: string;
+            city: string;
+            state: string;
+            postalCode: string;
+            country: string;
+          };
+        }
+
+        const payload: PaymentIntentPayload = {
+          amount: 1000, // This will be replaced with the actual amount
+          currency: 'usd',
+        };
+
+        // Add shipping data if available
+        if (shippingData) {
+          payload.shipping = {
+            name: `${shippingData.firstName} ${shippingData.lastName}`,
+            address: shippingData.address1 + (shippingData.address2 ? `, ${shippingData.address2}` : ''),
+            city: shippingData.city,
+            state: shippingData.state,
+            postalCode: shippingData.postalCode,
+            country: shippingData.country,
+          };
+        }
+
         const response = await fetch('/api/checkout/payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            amount: 1000, // This will be replaced with the actual amount
-            currency: 'usd',
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {

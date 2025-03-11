@@ -75,7 +75,7 @@ export default function CheckoutForm() {
           )}
 
           {currentStep === 'payment' && (
-            <StripeProvider>
+            <StripeProvider shippingData={shippingData}>
               {({ clientSecret }) => (
                 <PaymentForm 
                   onSuccess={handlePaymentSuccess} 

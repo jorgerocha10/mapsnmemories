@@ -141,7 +141,7 @@ export default function PaymentForm({ onSuccess, onBack, clientSecret }: Payment
             Back
           </Button>
           <Button type="submit" className="flex-1" disabled={!stripe || isProcessing}>
-            {isProcessing ? 'Processing...' : `Pay ${formatCurrency(totalAmount)}`}
+            {isProcessing ? 'Processing...' : 'Pay'}
           </Button>
         </div>
       </div>

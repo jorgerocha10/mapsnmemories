@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/components/ui/use-toast';
+import { formatCurrency } from '@/lib/utils';
 
 // Client component that uses the search params
 function OrderConfirmationContent() {
@@ -164,11 +165,10 @@ function OrderConfirmationContent() {
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount / 100);
+  // Local format function that handles cents-to-dollars conversion
+  // This is necessary because our API returns cents but our utils function expects dollars
+  const formatOrderAmount = (amountInCents: number) => {
+    return formatCurrency(amountInCents / 100);
   };
 
   if (isLoading) {
@@ -211,12 +211,15 @@ function OrderConfirmationContent() {
   // Make sure shipping data exists
   const shipping = orderDetails.shipping || {
     name: 'Customer',
-    address: 'N/A',
-    city: 'N/A',
-    state: 'N/A',
-    postalCode: 'N/A',
-    country: 'N/A'
+    address: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: ''
   };
+
+  // Check if we have meaningful shipping data to display
+  const hasShippingAddress = shipping.address && shipping.city && shipping.state;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -251,7 +254,7 @@ function OrderConfirmationContent() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total:</span>
-                <span className="font-semibold">{formatCurrency(orderDetails.total)}</span>
+                <span className="font-semibold">{formatOrderAmount(orderDetails.total)}</span>
               </div>
             </div>
           </div>
@@ -259,13 +262,21 @@ function OrderConfirmationContent() {
           <div>
             <h2 className="text-lg font-semibold mb-2">Shipping Address</h2>
             <div className="bg-muted rounded-md p-4">
-              <p>{shipping.name}</p>
-              <p>{shipping.address}</p>
-              <p>
-                {shipping.city}, {shipping.state}{' '}
-                {shipping.postalCode}
-              </p>
-              <p>{shipping.country}</p>
+              {hasShippingAddress ? (
+                <>
+                  <p>{shipping.name}</p>
+                  <p>{shipping.address}</p>
+                  <p>
+                    {shipping.city}, {shipping.state}{' '}
+                    {shipping.postalCode}
+                  </p>
+                  <p>{shipping.country}</p>
+                </>
+              ) : (
+                <p className="text-muted-foreground">
+                  Shipping information not available. Please check your email for delivery details.
+                </p>
+              )}
             </div>
           </div>
 
@@ -283,7 +294,7 @@ function OrderConfirmationContent() {
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                     </div>
-                    <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                    <p className="font-medium">{formatOrderAmount(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
@@ -295,24 +306,24 @@ function OrderConfirmationContent() {
             <div className="bg-muted rounded-md p-4 space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal:</span>
-                <span>{formatCurrency(orderDetails.subtotal || 0)}</span>
+                <span>{formatOrderAmount(orderDetails.subtotal || 0)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping:</span>
                 {orderDetails.shippingCost === 0 ? (
                   <span className="text-green-600">Free</span>
                 ) : (
-                  <span>{formatCurrency(orderDetails.shippingCost || 0)}</span>
+                  <span>{formatOrderAmount(orderDetails.shippingCost || 0)}</span>
                 )}
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax (8%):</span>
-                <span>{formatCurrency(orderDetails.tax || 0)}</span>
+                <span>{formatOrderAmount(orderDetails.tax || 0)}</span>
               </div>
               <Separator className="my-2" />
               <div className="flex justify-between font-semibold">
                 <span>Total:</span>
-                <span>{formatCurrency(orderDetails.total || 0)}</span>
+                <span>{formatOrderAmount(orderDetails.total || 0)}</span>
               </div>
             </div>
           </div>

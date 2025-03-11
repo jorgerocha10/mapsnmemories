@@ -227,8 +227,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                     </div>
                   </TableCell>
                   <TableCell>{item.quantity}</TableCell>
-                  <TableCell>{formatCurrency(Number(item.price))}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(Number(item.price) * item.quantity)}</TableCell>
+                  <TableCell>{formatCurrency(Number(item.price) / 100)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(Number(item.price) * item.quantity / 100)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -247,26 +247,26 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatCurrency(Number(order.subtotal))}</span>
+                <span>{formatCurrency(Number(order.subtotal) / 100)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>{formatCurrency(Number(order.shipping))}</span>
+                <span>{formatCurrency(Number(order.shipping) / 100)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax</span>
-                <span>{formatCurrency(Number(order.tax))}</span>
+                <span>{formatCurrency(Number(order.tax) / 100)}</span>
               </div>
               {Number(order.discount) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Discount</span>
-                  <span className="text-green-600">-{formatCurrency(Number(order.discount))}</span>
+                  <span className="text-green-600">-{formatCurrency(Number(order.discount) / 100)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Total</span>
-                <span>{formatCurrency(Number(order.total))}</span>
+                <span>{formatCurrency(Number(order.total) / 100)}</span>
               </div>
             </div>
           </CardContent>

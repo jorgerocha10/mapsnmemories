@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
           }
         : {
             name: session.user.name || 'Customer',
-            address: 'N/A',
-            city: 'N/A',
-            state: 'N/A',
-            postalCode: 'N/A',
-            country: 'N/A'
+            address: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: ''
           };
           
       return NextResponse.json({
@@ -137,7 +137,9 @@ export async function GET(request: NextRequest) {
         for (let i = 0; i < itemCount; i++) {
           const productId = paymentIntent.metadata[`item_${i}_id`];
           const productName = paymentIntent.metadata[`item_${i}_name`];
-          const price = parseFloat(paymentIntent.metadata[`item_${i}_price`] || '0');
+          const priceDollars = parseFloat(paymentIntent.metadata[`item_${i}_price`] || '0');
+          // The item_X_price is stored in dollars but we need cents for consistency
+          const priceCents = Math.round(priceDollars * 100);
           const quantity = parseInt(paymentIntent.metadata[`item_${i}_qty`] || '1');
           const variantId = paymentIntent.metadata[`item_${i}_variant`] || null;
           
@@ -146,7 +148,7 @@ export async function GET(request: NextRequest) {
               productId,
               productVariantId: variantId,
               quantity,
-              price,
+              price: priceCents,
               productName
             });
           }
@@ -163,7 +165,7 @@ export async function GET(request: NextRequest) {
               productId: item.productId,
               productVariantId: item.variantId || null,
               quantity: item.quantity,
-              price: item.price,
+              price: Math.round(parseFloat(item.price) * 100), // Convert to cents if in dollars
               productName: item.productName
             }));
           }
@@ -191,7 +193,7 @@ export async function GET(request: NextRequest) {
                 productId: item.productId,
                 productVariantId: item.variantId || null,
                 quantity: item.quantity,
-                price: item.price,
+                price: Math.round(parseFloat(item.price) * 100), // Convert to cents if in dollars
                 productName: item.productName
               }));
             }
@@ -203,9 +205,12 @@ export async function GET(request: NextRequest) {
       
       // If we got items from metadata, calculate values
       if (cartItems.length > 0) {
+        // Values from metadata are already in cents, no need to convert again
         subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        shippingCost = subtotal >= 100 ? 0 : 10;
-        tax = Math.round(subtotal * 0.08 * 100) / 100;
+        shippingCost = subtotal >= 10000 ? 0 : 1000; // $100 in cents = 10000, $10 in cents = 1000
+        // Calculate tax (8%)
+        tax = Math.round(subtotal * 0.08);
+        // Calculate the final total
         calculatedTotal = subtotal + shippingCost + tax;
       }
     }
@@ -252,27 +257,34 @@ export async function GET(request: NextRequest) {
       if (userCart && userCart.items.length > 0) {
         console.log(`Using current cart for payment intent ${paymentIntentId}`);
         
-        // Calculate values based on actual cart items
-        subtotal = userCart.items.reduce((sum, item) => 
-          sum + (Number(item.productVariant?.price || item.product.price) * item.quantity), 0);
+        // Map cart items first to get prices in cents
+        cartItems = userCart.items.map(item => {
+          // Get the price in dollars
+          const priceDollars = Number(item.productVariant?.price || item.product.price);
+          // Convert to cents
+          const priceCents = Math.round(priceDollars * 100);
+          
+          return {
+            productId: item.productId,
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+            price: priceCents,
+            productName: item.product.name,
+          };
+        });
+        
+        // Calculate values based on the cart items (already in cents)
+        subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         // Calculate shipping cost (free over $100, otherwise $10)
-        shippingCost = subtotal >= 100 ? 0 : 10;
+        // $100 in cents = 10000, $10 in cents = 1000
+        shippingCost = subtotal >= 10000 ? 0 : 1000;
         
         // Calculate tax (8%)
-        tax = Math.round(subtotal * 0.08 * 100) / 100;
+        tax = Math.round(subtotal * 0.08);
         
         // Calculate total
         calculatedTotal = subtotal + shippingCost + tax;
-        
-        // Map cart items to the format needed for order items
-        cartItems = userCart.items.map(item => ({
-          productId: item.productId,
-          productVariantId: item.productVariantId,
-          quantity: item.quantity,
-          price: Number(item.productVariant?.price || item.product.price),
-          productName: item.product.name,
-        }));
       }
     }
     
@@ -349,12 +361,35 @@ export async function GET(request: NextRequest) {
     // Create shipping information based on real address
     const shippingInfo = {
       name: session.user.name || 'Customer',
-      address: userAddress?.street || 'N/A',
-      city: userAddress?.city || 'N/A',
-      state: userAddress?.state || 'N/A',
-      postalCode: userAddress?.postalCode || 'N/A',
-      country: userAddress?.country || 'N/A',
+      address: userAddress?.street || '',
+      city: userAddress?.city || '',
+      state: userAddress?.state || '',
+      postalCode: userAddress?.postalCode || '',
+      country: userAddress?.country || '',
     };
+
+    // Check if shipping data was saved in the payment intent metadata
+    if (paymentIntent.metadata) {
+      // Try to get shipping information from payment intent metadata
+      if (paymentIntent.metadata.shippingName) {
+        shippingInfo.name = paymentIntent.metadata.shippingName;
+      }
+      if (paymentIntent.metadata.shippingAddress) {
+        shippingInfo.address = paymentIntent.metadata.shippingAddress;
+      }
+      if (paymentIntent.metadata.shippingCity) {
+        shippingInfo.city = paymentIntent.metadata.shippingCity;
+      }
+      if (paymentIntent.metadata.shippingState) {
+        shippingInfo.state = paymentIntent.metadata.shippingState;
+      }
+      if (paymentIntent.metadata.shippingPostal) {
+        shippingInfo.postalCode = paymentIntent.metadata.shippingPostal;
+      }
+      if (paymentIntent.metadata.shippingCountry) {
+        shippingInfo.country = paymentIntent.metadata.shippingCountry;
+      }
+    }
     
     // Create order details for response with exact cart items
     const orderDetails = {

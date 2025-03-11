@@ -124,7 +124,7 @@ export default async function OrdersPage() {
                     <TableCell className="font-medium">{order.orderNumber}</TableCell>
                     <TableCell>{format(new Date(order.createdAt), 'MMM d, yyyy')}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell>{formatCurrency(Number(order.total))}</TableCell>
+                    <TableCell>{formatCurrency(Number(order.total) / 100)}</TableCell>
                     <TableCell>{order.items.length}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" asChild>
