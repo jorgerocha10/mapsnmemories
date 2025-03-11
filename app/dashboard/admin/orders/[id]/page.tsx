@@ -25,13 +25,16 @@ import { Separator } from "@/components/ui/separator";
 import UpdateOrderStatusForm from "@/components/admin/UpdateOrderStatusForm";
 
 interface OrderDetailsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function OrderDetailsPage({ params }: OrderDetailsPageProps) {
-  const orderId = params.id;
+  // Await the params before accessing properties
+  const resolvedParams = await params;
+  const orderId = resolvedParams.id;
+  
   const session = await auth();
 
   if (!session?.user) {
@@ -60,18 +63,24 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
         },
       },
       address: true,
+      paymentMethod: true,
       items: {
         include: {
           product: {
             select: {
               id: true,
-              title: true,
-              slug: true,
+              name: true,
+              sku: true,
               images: true,
             },
           },
         },
       },
+      statusUpdates: {
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }
     },
   });
 
@@ -138,16 +147,20 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
             
             <div>
               <h3 className="font-medium">Shipping Address</h3>
-              <p>{order.address.name}</p>
-              <p>{order.address.street}</p>
-              {order.address.street2 && <p>{order.address.street2}</p>}
-              <p>{order.address.city}, {order.address.state} {order.address.postalCode}</p>
-              <p>{order.address.country}</p>
+              {order.address ? (
+                <>
+                  <p>{order.address.street}</p>
+                  <p>{order.address.city}, {order.address.state} {order.address.postalCode}</p>
+                  <p>{order.address.country}</p>
+                </>
+              ) : (
+                <p>No shipping address provided</p>
+              )}
             </div>
             
             <div>
               <h3 className="font-medium">Contact</h3>
-              <p>{order.address.phone || "Not provided"}</p>
+              <p>{order.user.email || "Not provided"}</p>
             </div>
           </CardContent>
         </Card>
@@ -179,13 +192,13 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
               <h3 className="font-medium">Payment Details</h3>
               <div className="grid grid-cols-2 gap-1 mt-2">
                 <span className="text-muted-foreground">Payment ID</span>
-                <span className="truncate font-mono text-sm">{order.paymentIntentId}</span>
+                <span className="truncate font-mono text-sm">{order.paymentIntentId || "N/A"}</span>
                 
                 <span className="text-muted-foreground">Payment Status</span>
-                <span>{order.paymentStatus || "Unknown"}</span>
+                <span>{order.status}</span>
                 
                 <span className="text-muted-foreground">Payment Method</span>
-                <span>Credit Card</span>
+                <span>{order.paymentMethod ? order.paymentMethod.provider : "N/A"}</span>
               </div>
             </div>
           </CardContent>
@@ -212,7 +225,7 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
             <TableBody>
               {order.items.map((item) => {
                 const productImage = item.product.images && item.product.images.length > 0 
-                  ? item.product.images[0]
+                  ? item.product.images[0].url
                   : null;
                 
                 return (
@@ -223,15 +236,15 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
                           <div className="flex-shrink-0 h-12 w-12 rounded-md overflow-hidden">
                             <img
                               src={productImage}
-                              alt={item.product.title}
+                              alt={item.product.name}
                               className="h-full w-full object-cover"
                             />
                           </div>
                         )}
                         <div>
-                          <p className="font-medium">{item.product.title}</p>
+                          <p className="font-medium">{item.product.name}</p>
                           <Button variant="link" size="sm" className="px-0 h-5" asChild>
-                            <Link href={`/products/${item.product.slug}`}>
+                            <Link href={`/products/${item.product.sku}`}>
                               View Product
                             </Link>
                           </Button>
