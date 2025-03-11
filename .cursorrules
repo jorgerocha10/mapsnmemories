@@ -147,7 +147,7 @@
 
 ### 4. Admin Dashboard [ ]
 
-- [ ] Admin authentication and authorization
+- [x] Admin authentication and authorization
 - [ ] Dashboard overview:
   - [ ] Layout and Structure:
     - [ ] Create admin dashboard layout with sidebar navigation
