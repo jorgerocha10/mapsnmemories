@@ -15,6 +15,20 @@ const nextConfig = {
   trailingSlash: false,
   reactStrictMode: true,
 
+  // Include environment variables that should be accessible on the client
+  env: {
+    UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
+    UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
+  },
+
+  // Configure image domains for Next.js Image component
+  images: {
+    domains: [
+      'r2aruz9pi6.ufs.sh', // UploadThing domain
+      'utfs.io', // Alternative UploadThing domain
+    ],
+  },
+
   // Disable TypeScript errors during build
   typescript: {
     // !! WARN !!

@@ -6,8 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import Image from "next/image";
-import { Trash2, Plus, ImageIcon, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +34,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import ProductImageUpload from "./ProductImageUpload";
 
 // Define the form schema with Zod
 const productFormSchema = z.object({
@@ -63,7 +63,6 @@ export default function ProductEditForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState(product.images || []);
-  const [newImageUrl, setNewImageUrl] = useState("");
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -93,10 +92,10 @@ export default function ProductEditForm({
         // Ensure SKU and barcode are properly handled
         sku: data.sku?.trim() || null,
         barcode: data.barcode?.trim() || null,
-        images: images.map((img: any, index: number) => ({
+        images: images.map((img: any) => ({
           id: img.id,
           url: img.url,
-          position: index,
+          position: img.position,
         })),
       };
 
@@ -156,24 +155,6 @@ export default function ProductEditForm({
       setIsSubmitting(false);
     }
   }
-
-  const handleAddImage = () => {
-    if (!newImageUrl) return;
-    
-    setImages([
-      ...images,
-      { 
-        id: `temp-${Date.now()}`, 
-        url: newImageUrl, 
-        position: images.length 
-      }
-    ]);
-    setNewImageUrl("");
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_: any, i: number) => i !== index));
-  };
 
   return (
     <Form {...form}>
@@ -333,67 +314,10 @@ export default function ProductEditForm({
 
         {/* Images Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Product Images</h3>
-          <Separator />
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
-            {images.map((image: any, index: number) => (
-              <Card key={image.id} className="overflow-hidden">
-                <CardContent className="p-2">
-                  <div className="relative aspect-square mb-2">
-                    <Image
-                      src={image.url}
-                      alt={`Product image ${index + 1}`}
-                      fill
-                      className="object-cover rounded-md"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="text-center text-xs text-muted-foreground">
-                    Position: {index + 1}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* Add new image */}
-            <Card>
-              <CardContent className="p-2">
-                <div className="relative aspect-square mb-2 flex items-center justify-center border-2 border-dashed rounded-md">
-                  <div className="text-center p-4">
-                    <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" />
-                    <div className="mt-2">
-                      <Input
-                        type="text"
-                        placeholder="Image URL"
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                        className="mb-2"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={handleAddImage}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ProductImageUpload 
+            images={images}
+            onImagesChange={setImages}
+          />
         </div>
 
         {/* Visibility and Other Settings */}

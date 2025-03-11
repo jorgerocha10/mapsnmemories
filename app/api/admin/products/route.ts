@@ -10,19 +10,19 @@ const productCreateSchema = z.object({
   description: z.string().min(10, { message: "Description must be at least 10 characters." }),
   price: z.number().min(0.01, { message: "Price must be greater than 0." }),
   compareAtPrice: z.number().min(0).nullable().optional(),
-  sku: z.string().optional(),
-  barcode: z.string().optional(),
+  sku: z.string().nullable().optional(),
+  barcode: z.string().nullable().optional(),
   inventory: z.number().min(0, { message: "Inventory must be a positive number." }),
   isVisible: z.boolean().default(true),
-  weight: z.number().min(0).optional(),
-  dimensions: z.string().optional(),
+  weight: z.number().min(0).nullable().optional(),
+  dimensions: z.string().nullable().optional(),
   categoryId: z.string({ required_error: "Please select a category." }),
   images: z.array(
     z.object({
-      url: z.string().url(),
+      url: z.string().url({ message: "Invalid image URL" }),
       position: z.number().min(0),
     })
-  ).optional().default([]),
+  ).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -121,139 +121,86 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  const session = await auth();
-  
-  // Check authentication
-  if (!session?.user) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  // Check if user is admin
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-
-  if (user?.role !== "ADMIN") {
-    return NextResponse.json(
-      { error: "Forbidden" },
-      { status: 403 }
-    );
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    // Validate request body
-    const body = await request.json();
-    let validatedData;
-    try {
-      validatedData = productCreateSchema.parse(body);
-    } catch (zodError) {
-      if (zodError instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: "Validation error", details: zodError.errors },
-          { status: 400 }
-        );
-      }
-      throw zodError;
+    // Check authentication and admin role
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    // Check if user has ADMIN role
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    // Check if SKU already exists
-    if (validatedData.sku && validatedData.sku !== "") {
-      const existingProductWithSku = await prisma.product.findUnique({
-        where: { sku: validatedData.sku },
-      });
+    // Parse and validate request body
+    const body = await req.json();
+    const validatedData = productCreateSchema.safeParse(body);
 
-      if (existingProductWithSku) {
-        return NextResponse.json(
-          { 
-            error: "Validation error", 
-            details: [{ 
-              path: ["sku"], 
-              message: "This SKU is already in use by another product" 
-            }] 
-          },
-          { status: 400 }
-        );
-      }
+    if (!validatedData.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: validatedData.error.errors },
+        { status: 400 }
+      );
     }
 
-    // Check if barcode already exists
-    if (validatedData.barcode && validatedData.barcode !== "") {
-      const existingProductWithBarcode = await prisma.product.findUnique({
-        where: { barcode: validatedData.barcode },
-      });
+    const data = validatedData.data;
 
-      if (existingProductWithBarcode) {
-        return NextResponse.json(
-          { 
-            error: "Validation error", 
-            details: [{ 
-              path: ["barcode"], 
-              message: "This barcode is already in use by another product" 
-            }] 
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // Convert price from dollars to cents for storage
+    const priceInCents = Math.round(data.price * 100);
+    const compareAtPriceInCents = data.compareAtPrice 
+      ? Math.round(data.compareAtPrice * 100) 
+      : null;
 
-    // Create product with images in a transaction
-    const product = await prisma.$transaction(async (tx) => {
-      // Create the product with price as Decimal
-      const newProduct = await tx.product.create({
-        data: {
-          name: validatedData.name,
-          description: validatedData.description,
-          price: new Prisma.Decimal(validatedData.price),
-          compareAtPrice: validatedData.compareAtPrice != null 
-            ? new Prisma.Decimal(validatedData.compareAtPrice)
-            : null,
-          // Transform empty strings to null for unique fields
-          sku: validatedData.sku === "" ? null : validatedData.sku,
-          barcode: validatedData.barcode === "" ? null : validatedData.barcode,
-          inventory: validatedData.inventory,
-          isVisible: validatedData.isVisible,
-          weight: validatedData.weight != null
-            ? new Prisma.Decimal(validatedData.weight)
-            : null,
-          dimensions: validatedData.dimensions,
-          categoryId: validatedData.categoryId,
-        },
-      });
-
-      // Create images if provided
-      if (validatedData.images && validatedData.images.length > 0) {
-        await tx.productImage.createMany({
-          data: validatedData.images.map(image => ({
-            url: image.url,
-            position: image.position,
-            productId: newProduct.id,
-          })),
-        });
-      }
-
-      return newProduct;
+    // Create the product
+    const product = await prisma.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: priceInCents,
+        compareAtPrice: compareAtPriceInCents,
+        sku: data.sku,
+        barcode: data.barcode,
+        inventory: data.inventory,
+        isVisible: data.isVisible,
+        weight: data.weight,
+        dimensions: data.dimensions,
+        categoryId: data.categoryId,
+        // Create images if provided
+        ...(data.images && data.images.length > 0
+          ? {
+              images: {
+                create: data.images.map((image) => ({
+                  url: image.url,
+                  position: image.position,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        images: true,
+        category: true,
+      },
     });
 
-    // Serialize the product for the response
-    const serializedProduct = {
+    // Convert price back to dollars for the response
+    const productWithDollarPrices = {
       ...product,
-      price: Number(product.price),
-      compareAtPrice: product.compareAtPrice != null ? Number(product.compareAtPrice) : null,
-      weight: product.weight != null ? Number(product.weight) : null,
+      price: Number(product.price) / 100,
+      compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) / 100 : null,
     };
 
-    return NextResponse.json({
-      message: "Product created successfully",
-      product: serializedProduct,
-    }, { status: 201 });
+    return NextResponse.json(
+      { 
+        message: "Product created successfully", 
+        product: productWithDollarPrices
+      }, 
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating product:", error);
-    
     return NextResponse.json(
       { error: "Failed to create product" },
       { status: 500 }
