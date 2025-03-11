@@ -148,16 +148,16 @@
 ### 4. Admin Dashboard [ ]
 
 - [x] Admin authentication and authorization
-- [ ] Dashboard overview:
-  - [ ] Layout and Structure:
-    - [ ] Create admin dashboard layout with sidebar navigation
-    - [ ] Implement responsive grid for dashboard widgets
-    - [ ] Add loading states and error boundaries
-  - [ ] Key Metrics Cards:
-    - [ ] Total revenue widget with real data
-    - [ ] Total orders widget with real data
-    - [ ] Total customers widget with real data
-    - [ ] Average order value widget with real data
+- [x] Dashboard overview:
+  - [x] Layout and Structure:
+    - [x] Create admin dashboard layout with sidebar navigation
+    - [x] Implement responsive grid for dashboard widgets
+    - [x] Add loading states and error boundaries
+  - [x] Key Metrics Cards:
+    - [x] Total revenue widget with real data
+    - [x] Total orders widget with real data
+    - [x] Total customers widget with real data
+    - [x] Average order value widget with real data
   - [ ] Sales Analytics:
     - [ ] Revenue Chart:
       - [ ] Implement line chart using Recharts

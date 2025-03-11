@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Trash2, Plus, ImageIcon } from "lucide-react";
+import { Trash2, Plus, ImageIcon, CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,8 +70,8 @@ export default function ProductEditForm({
     defaultValues: {
       name: product.name,
       description: product.description || "",
-      price: product.price / 100, // Convert cents to dollars for display
-      compareAtPrice: product.compareAtPrice ? product.compareAtPrice / 100 : undefined,
+      price: product.price,
+      compareAtPrice: product.compareAtPrice || undefined,
       sku: product.sku || "",
       barcode: product.barcode || "",
       inventory: product.inventory || 0,
@@ -85,11 +85,14 @@ export default function ProductEditForm({
   async function onSubmit(data: ProductFormValues) {
     setIsSubmitting(true);
     try {
-      // Convert price and compareAtPrice to cents for storage
+      // Send the price directly in dollars (not cents)
       const formData = {
         ...data,
-        price: Math.round(data.price * 100),
-        compareAtPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : null,
+        price: data.price,
+        compareAtPrice: data.compareAtPrice || null,
+        // Ensure SKU and barcode are properly handled
+        sku: data.sku?.trim() || null,
+        barcode: data.barcode?.trim() || null,
         images: images.map((img: any, index: number) => ({
           id: img.id,
           url: img.url,
@@ -106,15 +109,49 @@ export default function ProductEditForm({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update product");
+        const errorData = await response.json();
+        if (errorData?.details) {
+          // Handle validation errors from the API
+          errorData.details.forEach((detail: any) => {
+            if (detail.path && detail.path.length > 0) {
+              const fieldName = detail.path[0];
+              form.setError(fieldName as any, { 
+                type: 'server', 
+                message: detail.message 
+              });
+            }
+          });
+          throw new Error("Validation failed");
+        }
+        throw new Error(errorData.error || "Failed to update product");
       }
 
-      toast.success("Product updated successfully");
+      // Show success toast with enhanced details
+      toast.success(`Product "${data.name}" updated successfully`, {
+        description: "All changes have been saved.",
+        action: {
+          label: "View Product",
+          onClick: () => router.push(`/dashboard/admin/products/${product.id}`)
+        },
+        icon: <CheckCircle className="h-4 w-4 text-green-500" />,
+        duration: 5000, // Show for 5 seconds
+      });
+      
+      // First refresh to ensure data is updated
       router.refresh();
+      
+      // Then redirect back to the products dashboard
+      setTimeout(() => {
+        router.push("/dashboard/admin/products");
+      }, 500); // Small delay to ensure the refresh completes
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("Failed to update product");
+      
+      if (error instanceof Error && error.message === "Validation failed") {
+        toast.error("Please fix the validation errors");
+      } else {
+        toast.error("Failed to update product");
+      }
     } finally {
       setIsSubmitting(false);
     }

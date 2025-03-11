@@ -32,7 +32,7 @@ interface ReviewWithUser extends Review {
   };
 }
 
-interface ProductWithRelations extends Omit<Product, 'price' | 'compareAtPrice' | 'weight'> {
+interface ProductWithRelations extends Omit<Product, 'price' | 'compareAtPrice' | 'weight' | 'createdAt' | 'updatedAt'> {
   price: number | null;
   compareAtPrice: number | null;
   weight: number | null;
@@ -69,25 +69,32 @@ function serializeProduct(product: any) {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ 
-  params 
-}: { 
-  params: { id: string } 
-}): Promise<Metadata> {
-  const product = await getProduct(params.id);
-  
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  // Await the params before accessing properties
+  const resolvedParams = await params;
+  const product = await getProduct(resolvedParams.id);
+
   if (!product) {
     return {
       title: 'Product Not Found',
-      description: 'The requested product could not be found',
+      description: 'The requested product could not be found.'
     };
   }
-  
+
   return {
-    title: `${product.name} | E-commerce Store`,
-    description: product.description.substring(0, 160),
+    title: product.name,
+    description: product.description,
     openGraph: {
-      images: product.images[0]?.url ? [product.images[0].url] : [],
+      images: [
+        {
+          url: product.images[0]?.url || '/placeholder-product.jpg',
+          width: 1200,
+          height: 630,
+          alt: product.name
+        }
+      ]
     },
   };
 }
@@ -169,17 +176,24 @@ async function getRelatedProducts(productId: string, categoryId: string | null) 
 export default async function ProductPage({ 
   params 
 }: { 
-  params: { id: string } 
+  params: Promise<{ id: string }> 
 }) {
-  const product = await getProduct(params.id);
-  
-  if (!product || !product.isVisible) {
+  // Await the params before accessing properties
+  const resolvedParams = await params;
+  const product = await getProduct(resolvedParams.id);
+
+  if (!product) {
     notFound();
   }
+
+  // Get related products based on same category
+  const relatedProducts = await getRelatedProducts(
+    resolvedParams.id, 
+    product.categoryId
+  );
   
   // Serialize the product to convert Decimal to number
   const serializedProduct = serializeProduct(product);
-  const relatedProducts = await getRelatedProducts(product.id, product.categoryId);
   
   // If serialization failed, show 404 page
   if (!serializedProduct) {

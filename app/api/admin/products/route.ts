@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // Validation schema for product creation
 const productCreateSchema = z.object({
@@ -94,8 +95,16 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
+    // Serialize each product to handle Decimal values
+    const serializedProducts = products.map(product => ({
+      ...product,
+      price: Number(product.price),
+      compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    }));
+
     return NextResponse.json({
-      products,
+      products: serializedProducts,
       pagination: {
         total: totalProducts,
         page,
@@ -139,22 +148,78 @@ export async function POST(request: NextRequest) {
   try {
     // Validate request body
     const body = await request.json();
-    const validatedData = productCreateSchema.parse(body);
+    let validatedData;
+    try {
+      validatedData = productCreateSchema.parse(body);
+    } catch (zodError) {
+      if (zodError instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: "Validation error", details: zodError.errors },
+          { status: 400 }
+        );
+      }
+      throw zodError;
+    }
+
+    // Check if SKU already exists
+    if (validatedData.sku && validatedData.sku !== "") {
+      const existingProductWithSku = await prisma.product.findUnique({
+        where: { sku: validatedData.sku },
+      });
+
+      if (existingProductWithSku) {
+        return NextResponse.json(
+          { 
+            error: "Validation error", 
+            details: [{ 
+              path: ["sku"], 
+              message: "This SKU is already in use by another product" 
+            }] 
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Check if barcode already exists
+    if (validatedData.barcode && validatedData.barcode !== "") {
+      const existingProductWithBarcode = await prisma.product.findUnique({
+        where: { barcode: validatedData.barcode },
+      });
+
+      if (existingProductWithBarcode) {
+        return NextResponse.json(
+          { 
+            error: "Validation error", 
+            details: [{ 
+              path: ["barcode"], 
+              message: "This barcode is already in use by another product" 
+            }] 
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create product with images in a transaction
     const product = await prisma.$transaction(async (tx) => {
-      // Create the product
+      // Create the product with price as Decimal
       const newProduct = await tx.product.create({
         data: {
           name: validatedData.name,
           description: validatedData.description,
-          price: validatedData.price,
-          compareAtPrice: validatedData.compareAtPrice,
-          sku: validatedData.sku,
-          barcode: validatedData.barcode,
+          price: new Prisma.Decimal(validatedData.price),
+          compareAtPrice: validatedData.compareAtPrice != null 
+            ? new Prisma.Decimal(validatedData.compareAtPrice)
+            : null,
+          // Transform empty strings to null for unique fields
+          sku: validatedData.sku === "" ? null : validatedData.sku,
+          barcode: validatedData.barcode === "" ? null : validatedData.barcode,
           inventory: validatedData.inventory,
           isVisible: validatedData.isVisible,
-          weight: validatedData.weight,
+          weight: validatedData.weight != null
+            ? new Prisma.Decimal(validatedData.weight)
+            : null,
           dimensions: validatedData.dimensions,
           categoryId: validatedData.categoryId,
         },
@@ -174,19 +239,20 @@ export async function POST(request: NextRequest) {
       return newProduct;
     });
 
+    // Serialize the product for the response
+    const serializedProduct = {
+      ...product,
+      price: Number(product.price),
+      compareAtPrice: product.compareAtPrice != null ? Number(product.compareAtPrice) : null,
+      weight: product.weight != null ? Number(product.weight) : null,
+    };
+
     return NextResponse.json({
       message: "Product created successfully",
-      product,
+      product: serializedProduct,
     }, { status: 201 });
   } catch (error) {
     console.error("Error creating product:", error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.errors },
-        { status: 400 }
-      );
-    }
     
     return NextResponse.json(
       { error: "Failed to create product" },

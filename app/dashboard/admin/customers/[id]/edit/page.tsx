@@ -14,9 +14,7 @@ import { ArrowLeft } from "lucide-react";
 import CustomerEditForm from "@/components/admin/CustomerEditForm";
 
 interface CustomerEditPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 // Define customer type with the fields we need for editing
@@ -42,7 +40,8 @@ type CustomerForEdit = {
 };
 
 export default async function CustomerEditPage({ params }: CustomerEditPageProps) {
-  const customerId = params.id;
+  const resolvedParams = await params;
+  const customerId = resolvedParams.id;
   const session = await auth();
 
   if (!session?.user) {

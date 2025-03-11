@@ -17,13 +17,11 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit } from "lucide-react";
 
 interface ProductPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const productId = params.id;
+  const { id: productId } = await params;
   const session = await auth();
 
   if (!session?.user) {
@@ -76,6 +74,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const averageRating = product.reviews.length > 0
     ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
     : 0;
+
+  // Serialize product data to handle Decimal fields
+  const serializedProduct = {
+    ...product,
+    price: Number(product.price),
+    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+    weight: product.weight ? Number(product.weight) : null,
+  };
 
   // Function to render stock status badge
   const getStockStatusBadge = (inventory: number) => {
@@ -159,7 +165,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Price</p>
-                  <p>{formatCurrency(Number(product.price))}</p>
+                  <p>{formatCurrency(serializedProduct.price)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Inventory</p>

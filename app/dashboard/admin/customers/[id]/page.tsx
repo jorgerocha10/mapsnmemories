@@ -46,9 +46,7 @@ const formatDate = (date: Date): string => {
 };
 
 interface CustomerPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 // Define types for our complex query results
@@ -115,7 +113,7 @@ type CustomerWithDetails = {
 };
 
 export default async function CustomerDetailPage({ params }: CustomerPageProps) {
-  const customerId = params.id;
+  const { id: customerId } = await params;
   const session = await auth();
 
   if (!session?.user) {

@@ -37,6 +37,13 @@ export default async function NewProductPage() {
     },
   });
 
+  // Serialize the categories to prevent any Decimal serialization issues
+  const serializedCategories = categories.map(category => ({
+    id: category.id,
+    name: category.name,
+    // Include other fields as needed
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -62,7 +69,7 @@ export default async function NewProductPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <NewProductForm categories={categories} />
+          <NewProductForm categories={serializedCategories} />
         </CardContent>
       </Card>
     </div>
