@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
-  
+
   // Check authentication
   if (!session?.user) {
     return NextResponse.json(
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search");
   const sort = searchParams.get("sort") || "createdAt";
   const order = searchParams.get("order") || "desc";
-  
+
   const skip = (page - 1) * limit;
 
   try {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     let where: any = {
       role: "USER", // Only list non-admin users
     };
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -50,26 +50,26 @@ export async function GET(request: NextRequest) {
 
     // Build the orderBy clause
     let orderBy: any = {};
-    
+
     // Validate sort field is allowed
     const allowedSortFields = ["name", "email", "createdAt"];
     const validSort = allowedSortFields.includes(sort) ? sort : "createdAt";
-    
+
     // Validate order direction
     const validOrder = order === "asc" ? "asc" : "desc";
-    
+
     orderBy[validSort] = validOrder;
 
     // Count total customers with filter
     const totalCustomers = await prisma.user.count({ where });
-    
+
     // Get customers with pagination
     const customers = await prisma.user.findMany({
       where,
       include: {
         profile: true,
         _count: {
-          select: { 
+          select: {
             orders: true,
           },
         },

@@ -65,7 +65,7 @@ export function CartSlideOver({ trigger }: CartSlideOverProps) {
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent className="flex flex-col w-full sm:max-w-lg">
+      <SheetContent className="flex flex-col w-full sm:max-w-lg p-6">
         <SheetHeader className="px-1">
           <div className="flex items-center justify-between">
             <SheetTitle>Your Cart</SheetTitle>

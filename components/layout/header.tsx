@@ -7,7 +7,6 @@ import { Menu, Search, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 import { CartSlideOver } from "@/components/cart/CartSlideOver";
 
@@ -19,18 +18,6 @@ const mainNavItems = [
   {
     title: "Products",
     href: "/products",
-  },
-  {
-    title: "Categories",
-    href: "/categories",
-  },
-  {
-    title: "About",
-    href: "/about",
-  },
-  {
-    title: "Contact",
-    href: "/contact",
   },
 ];
 
@@ -60,8 +47,8 @@ export default function Header() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[80%] sm:w-[350px]">
-              <div className="px-2 py-6">
+            <SheetContent side="left" className="w-[80%] sm:w-[350px] p-6">
+              <div className="py-6">
                 <Link href="/home" className="flex items-center space-x-2 font-bold">
                   Maps & Memories
                 </Link>
@@ -71,7 +58,7 @@ export default function Header() {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "flex items-center px-2 py-1 text-lg font-medium transition-colors hover:text-foreground/80",
+                        "flex items-center px-2 py-2 text-lg font-medium transition-colors hover:text-foreground/80",
                         pathname === item.href
                           ? "text-foreground"
                           : "text-foreground/60"
@@ -141,7 +128,6 @@ export default function Header() {
               <span className="sr-only">Search</span>
             </Button>
           )}
-          <ThemeToggle />
           <CartSlideOver />
           <Link href="/dashboard">
             <Button variant="ghost" size="icon">

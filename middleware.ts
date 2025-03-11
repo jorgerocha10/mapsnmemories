@@ -39,7 +39,12 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Specify which paths should NOT be handled by the middleware
+// Specify which paths should be handled by the middleware (only protected routes)
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: [
+    '/dashboard/:path*',
+    '/checkout/:path*',
+    '/account/:path*',
+    '/profile/:path*',
+  ],
 }; 

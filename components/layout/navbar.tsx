@@ -14,7 +14,6 @@ import {
   UserPlus,
   ShoppingCart
 } from 'lucide-react';
-import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -36,9 +35,8 @@ export function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   const navLinks = [
-    { href: '/', label: 'Home' },
+    { href: '/home', label: 'Home' },
     { href: '/products', label: 'Products' },
-    { href: '/categories', label: 'Categories' },
   ];
 
   return (
@@ -112,22 +110,14 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex items-center space-x-2">
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="default" size="sm">
                 <Link href="/auth/signin">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
                 </Link>
               </Button>
-              <Button asChild variant="default" size="sm">
-                <Link href="/auth/signup">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
-                </Link>
-              </Button>
             </div>
           )}
-
-          <ModeToggle />
         </div>
 
         {/* Mobile Menu Button */}
@@ -150,20 +140,17 @@ export function Navbar() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center pb-4 border-b">
-                  <span className="font-semibold">Menu</span>
-                  <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                    <X className="h-5 w-5" />
-                  </Button>
+                  <span className="font-semibold text-lg">Menu</span>
                 </div>
-                <nav className="flex flex-col mt-6 space-y-6">
+                <nav className="flex flex-col mt-6 space-y-6 px-2">
                   {navLinks.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`text-sm font-medium hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
+                      className={`text-sm font-medium py-2 hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'
                         }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -171,7 +158,7 @@ export function Navbar() {
                     </Link>
                   ))}
                 </nav>
-                <div className="mt-8 pt-4 border-t">
+                <div className="mt-8 pt-4 border-t px-2">
                   {isAuthenticated ? (
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
@@ -205,16 +192,10 @@ export function Navbar() {
                     </div>
                   ) : (
                     <div className="flex flex-col space-y-2">
-                      <Button asChild variant="outline" size="sm">
+                      <Button asChild size="sm">
                         <Link href="/auth/signin" onClick={() => setIsMobileMenuOpen(false)}>
                           <LogIn className="mr-2 h-4 w-4" />
                           Sign In
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm">
-                        <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Sign Up
                         </Link>
                       </Button>
                     </div>
@@ -222,7 +203,6 @@ export function Navbar() {
                 </div>
                 <div className="mt-auto pb-4 flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">© 2023 Maps N Memories</span>
-                  <ModeToggle />
                 </div>
               </div>
             </SheetContent>

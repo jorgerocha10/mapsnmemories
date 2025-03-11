@@ -24,13 +24,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  ArrowLeft, 
-  Edit, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
+import {
+  ArrowLeft,
+  Edit,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
   ShoppingBag,
   CreditCard,
   User
@@ -180,20 +180,20 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
 
   // Calculate customer metrics
   const totalSpent = customer.orders.reduce(
-    (total: number, order: { total: number | string }) => total + Number(order.total), 
+    (total: number, order: { total: number | string }) => total + Number(order.total),
     0
   );
-  
-  const averageOrderValue = customer.orders.length > 0 
-    ? totalSpent / customer.orders.length 
+
+  const averageOrderValue = customer.orders.length > 0
+    ? totalSpent / customer.orders.length
     : 0;
 
-  const firstOrderDate = customer.orders.length > 0 
-    ? customer.orders[customer.orders.length - 1].createdAt 
+  const firstOrderDate = customer.orders.length > 0
+    ? customer.orders[customer.orders.length - 1].createdAt
     : null;
 
-  const lastOrderDate = customer.orders.length > 0 
-    ? customer.orders[0].createdAt 
+  const lastOrderDate = customer.orders.length > 0
+    ? customer.orders[0].createdAt
     : null;
 
   // Get default address
@@ -317,7 +317,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                   Payment
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="stats" className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <Card>
@@ -330,7 +330,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Orders</CardTitle>
@@ -341,7 +341,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Average Order</CardTitle>
@@ -352,7 +352,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Reviews</CardTitle>
@@ -364,7 +364,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                     </CardContent>
                   </Card>
                 </div>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm font-medium">Activity Timeline</CardTitle>
@@ -377,7 +377,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                       </Badge>
                       <span>Account created on {formatDate(customer.createdAt)}</span>
                     </div>
-                    
+
                     {firstOrderDate && (
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="rounded-full px-2">
@@ -387,7 +387,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                         <span>First purchase on {formatDate(firstOrderDate)}</span>
                       </div>
                     )}
-                    
+
                     {lastOrderDate && lastOrderDate !== firstOrderDate && (
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="rounded-full px-2">
@@ -400,7 +400,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="orders">
                 <Card>
                   <CardHeader>
@@ -422,16 +422,16 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                         <TableBody>
                           {customer.orders.map((order) => {
                             const status = order.statusUpdates[0]?.status || order.status;
-                            
+
                             return (
                               <TableRow key={order.id}>
                                 <TableCell className="font-medium">#{order.orderNumber}</TableCell>
                                 <TableCell>{formatDate(order.createdAt)}</TableCell>
                                 <TableCell>
-                                  <Badge 
-                                    variant={status === "DELIVERED" ? "default" : 
-                                             status === "PROCESSING" ? "secondary" :
-                                             status === "SHIPPED" ? "outline" : "destructive"}
+                                  <Badge
+                                    variant={status === "DELIVERED" ? "default" :
+                                      status === "PROCESSING" ? "secondary" :
+                                        status === "SHIPPED" ? "outline" : "destructive"}
                                   >
                                     {status}
                                   </Badge>
@@ -467,7 +467,7 @@ export default async function CustomerDetailPage({ params }: CustomerPageProps) 
                   )}
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="payment">
                 <Card>
                   <CardHeader>
