@@ -109,70 +109,182 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Generate realistic items based on the amount
-    // For simplicity, we'll create items matching the total amount (minus tax and shipping)
-    const totalAmount = paymentIntent.amount;
-    
-    // Calculate costs using the same logic as CartSummary
-    // Tax rate is 8%
-    const taxRate = 0.08;
-    
-    // Work backwards from total to get subtotal
-    // Total = Subtotal + Shipping + Tax
-    // Where Tax = Subtotal * taxRate
-    // And Shipping = Subtotal >= 10000 ? 0 : 1000 (cents)
-    
-    // Simplifying the equation: Total = Subtotal * (1 + taxRate) + Shipping
-    // Since we don't know shipping yet (depends on subtotal), we'll estimate and adjust
-    const estimatedSubtotal = Math.round(totalAmount / (1 + taxRate));
-    
-    // Calculate actual values
-    const subtotal = estimatedSubtotal;
-    const shippingCost = subtotal >= 10000 ? 0 : 1000; // $100 = 10000 cents, $10 = 1000 cents
-    const tax = Math.round(subtotal * taxRate);
-    
-    // Recalculate total to ensure it matches
-    const calculatedTotal = subtotal + shippingCost + tax;
-    
-    // Fetch some real products from the database
-    const products = await prisma.product.findMany({
-      take: 2
-    });
-    
-    // If we don't have any products, we can't create an order
-    if (products.length === 0) {
-      return NextResponse.json(
-        {
-          message: 'No products found',
-          details: 'Unable to create order without products'
-        },
-        { status: 500 }
-      );
+    // Define the type for cart items to avoid implicit any
+    interface CartItemType {
+      productId: string;
+      productVariantId?: string | null;
+      quantity: number;
+      price: number;
+      productName: string;
     }
     
-    // Create cart items based on real products
-    const itemPrice = Math.round(subtotal * 0.6);
-    const itemPrice2 = subtotal - itemPrice;
+    let cartItems: CartItemType[] = [];
+    let subtotal = 0;
+    let shippingCost = 0;
+    let tax = 0;
+    let calculatedTotal = 0;
     
-    const cartItems = [
-      {
-        id: products[0].id,
-        name: products[0].name,
-        quantity: 1,
-        price: itemPrice,
-        productId: products[0].id
+    // PRIORITY 1: First try to reconstruct cart items from the payment intent metadata
+    // This is the most reliable source since it captures the cart at checkout time
+    if (paymentIntent.metadata) {
+      console.log(`Attempting to reconstruct cart from payment intent metadata for ${paymentIntentId}`);
+      
+      // First check if we have item_X_id fields in the metadata (detailed format)
+      const itemCount = parseInt(paymentIntent.metadata.itemCount || '0');
+      
+      if (itemCount > 0) {
+        // Extract items from individual metadata fields
+        for (let i = 0; i < itemCount; i++) {
+          const productId = paymentIntent.metadata[`item_${i}_id`];
+          const productName = paymentIntent.metadata[`item_${i}_name`];
+          const price = parseFloat(paymentIntent.metadata[`item_${i}_price`] || '0');
+          const quantity = parseInt(paymentIntent.metadata[`item_${i}_qty`] || '1');
+          const variantId = paymentIntent.metadata[`item_${i}_variant`] || null;
+          
+          if (productId && productName) {
+            cartItems.push({
+              productId,
+              productVariantId: variantId,
+              quantity,
+              price,
+              productName
+            });
+          }
+        }
       }
-    ];
+      // If individual items weren't found, try the JSON string format
+      else if (paymentIntent.metadata.cartSnapshot) {
+        try {
+          // If there's a single cartSnapshot field
+          const snapshotData = JSON.parse(paymentIntent.metadata.cartSnapshot);
+          
+          if (snapshotData.items && Array.isArray(snapshotData.items)) {
+            cartItems = snapshotData.items.map((item: any) => ({
+              productId: item.productId,
+              productVariantId: item.variantId || null,
+              quantity: item.quantity,
+              price: item.price,
+              productName: item.productName
+            }));
+          }
+        } catch (error) {
+          console.error('Error parsing cart snapshot from metadata:', error);
+        }
+      } else if (paymentIntent.metadata.cartSnapshotChunks) {
+        // If the cart snapshot is split across multiple metadata fields
+        try {
+          const chunks = parseInt(paymentIntent.metadata.cartSnapshotChunks);
+          let fullSnapshot = '';
+          
+          for (let i = 0; i < chunks; i++) {
+            const chunkKey = `cartSnapshot_${i}`;
+            if (paymentIntent.metadata[chunkKey]) {
+              fullSnapshot += paymentIntent.metadata[chunkKey];
+            }
+          }
+          
+          if (fullSnapshot) {
+            const snapshotData = JSON.parse(fullSnapshot);
+            
+            if (snapshotData.items && Array.isArray(snapshotData.items)) {
+              cartItems = snapshotData.items.map((item: any) => ({
+                productId: item.productId,
+                productVariantId: item.variantId || null,
+                quantity: item.quantity,
+                price: item.price,
+                productName: item.productName
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error reconstructing cart snapshot from chunks:', error);
+        }
+      }
+      
+      // If we got items from metadata, calculate values
+      if (cartItems.length > 0) {
+        subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        shippingCost = subtotal >= 100 ? 0 : 10;
+        tax = Math.round(subtotal * 0.08 * 100) / 100;
+        calculatedTotal = subtotal + shippingCost + tax;
+      }
+    }
     
-    // Add a second item if the subtotal is large enough and we have a second product
-    if (itemPrice2 > 0 && products.length > 1) {
-      cartItems.push({
-        id: products[1].id,
-        name: products[1].name,
-        quantity: 1,
-        price: itemPrice2,
-        productId: products[1].id
-      });
+    // PRIORITY 2: If we didn't get cart items from metadata, check the user's current cart
+    if (cartItems.length === 0) {
+      // Retrieve the metadata from the payment intent, which might contain cart ID
+      const cartId = paymentIntent.metadata?.cartId;
+      
+      // Find the user's cart and items
+      let userCart;
+      
+      // Check if we have a cart ID in the payment intent metadata
+      if (cartId) {
+        userCart = await prisma.cart.findUnique({
+          where: { id: cartId },
+          include: { 
+            items: {
+              include: {
+                product: true,
+                productVariant: true
+              }
+            }
+          }
+        });
+      }
+      
+      // If we couldn't find the cart by ID from metadata, try to find by user ID
+      if (!userCart && session.user.id) {
+        userCart = await prisma.cart.findFirst({
+          where: { userId: session.user.id as string },
+          include: { 
+            items: {
+              include: {
+                product: true,
+                productVariant: true
+              }
+            }
+          }
+        });
+      }
+      
+      // If we have cart items, use them for the order
+      if (userCart && userCart.items.length > 0) {
+        console.log(`Using current cart for payment intent ${paymentIntentId}`);
+        
+        // Calculate values based on actual cart items
+        subtotal = userCart.items.reduce((sum, item) => 
+          sum + (Number(item.productVariant?.price || item.product.price) * item.quantity), 0);
+        
+        // Calculate shipping cost (free over $100, otherwise $10)
+        shippingCost = subtotal >= 100 ? 0 : 10;
+        
+        // Calculate tax (8%)
+        tax = Math.round(subtotal * 0.08 * 100) / 100;
+        
+        // Calculate total
+        calculatedTotal = subtotal + shippingCost + tax;
+        
+        // Map cart items to the format needed for order items
+        cartItems = userCart.items.map(item => ({
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          quantity: item.quantity,
+          price: Number(item.productVariant?.price || item.product.price),
+          productName: item.product.name,
+        }));
+      }
+    }
+    
+    // If we still don't have any cart items after exhausting all options, return an error
+    if (cartItems.length === 0) {
+      return NextResponse.json(
+        { 
+          message: 'Unable to create order',
+          details: 'Could not find cart items for this payment. The cart may have been cleared before order creation.'
+        },
+        { status: 400 }
+      );
     }
     
     // Generate a unique order number
@@ -191,7 +303,7 @@ export async function GET(request: NextRequest) {
     // If payment was successful, save the order to the database
     if (paymentIntent.status === 'succeeded') {
       try {
-        // Create the order in the database
+        // Create the order in the database with real cart items
         createdOrder = await prisma.order.create({
           data: {
             orderNumber: orderNumber,
@@ -208,7 +320,8 @@ export async function GET(request: NextRequest) {
               create: cartItems.map(item => ({
                 quantity: item.quantity,
                 price: item.price,
-                productId: item.productId
+                productId: item.productId,
+                productVariantId: item.productVariantId,
               }))
             },
             statusUpdates: {
@@ -219,23 +332,31 @@ export async function GET(request: NextRequest) {
             }
           }
         });
+        
+        console.log(`Order created successfully: ${orderNumber} with ${cartItems.length} items`);
       } catch (orderError) {
         console.error('Error creating order:', orderError);
-        // Continue without creating an order but log the error
+        return NextResponse.json(
+          { 
+            message: 'Failed to create order',
+            details: orderError instanceof Error ? orderError.message : 'Unknown error'
+          },
+          { status: 500 }
+        );
       }
     }
     
-    // Create shipping information - never return null
+    // Create shipping information based on real address
     const shippingInfo = {
       name: session.user.name || 'Customer',
-      address: userAddress?.street || paymentIntent.shipping?.address?.line1 || 'N/A',
-      city: userAddress?.city || paymentIntent.shipping?.address?.city || 'N/A',
-      state: userAddress?.state || paymentIntent.shipping?.address?.state || 'N/A',
-      postalCode: userAddress?.postalCode || paymentIntent.shipping?.address?.postal_code || 'N/A',
-      country: userAddress?.country || paymentIntent.shipping?.address?.country || 'N/A',
+      address: userAddress?.street || 'N/A',
+      city: userAddress?.city || 'N/A',
+      state: userAddress?.state || 'N/A',
+      postalCode: userAddress?.postalCode || 'N/A',
+      country: userAddress?.country || 'N/A',
     };
     
-    // Create order details for response
+    // Create order details for response with exact cart items
     const orderDetails = {
       id: orderNumber,
       date: new Date().toISOString(),
@@ -246,8 +367,8 @@ export async function GET(request: NextRequest) {
       tax,
       total: calculatedTotal,
       items: cartItems.map(item => ({
-        id: item.id,
-        name: item.name,
+        id: item.productId,
+        name: item.productName,
         quantity: item.quantity,
         price: item.price
       })),

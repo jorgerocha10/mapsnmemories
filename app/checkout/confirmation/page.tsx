@@ -32,19 +32,20 @@ function OrderConfirmationContent() {
       return;
     }
 
-    // Clear cart immediately if payment was successful
-    const handleCartClearing = async () => {
-      if (paymentStatus === 'succeeded' && !cartCleared) {
-        console.log('Starting aggressive cart clearing...');
+    // Perform payment confirmation steps in the correct order
+    const performOrderConfirmation = async () => {
+      try {
+        setIsLoading(true);
         
-        // Try multiple times to ensure the cart is cleared
-        let success = false;
-        for (let attempt = 1; attempt <= 3 && !success; attempt++) {
+        // Step 1: Clear the cart immediately if payment succeeded
+        // This needs to happen first to prevent race conditions
+        if (paymentStatus === 'succeeded' && !cartCleared) {
+          console.log('Starting cart clearing before fetching order...');
+          
           try {
             await clearCart();
             setCartCleared(true);
-            console.log(`Cart cleared successfully on attempt ${attempt}`);
-            success = true;
+            console.log('Cart cleared successfully');
             
             // Also make a direct API call as a backup
             try {
@@ -57,24 +58,13 @@ function OrderConfirmationContent() {
               console.error('Direct API call to clear cart failed:', directApiError);
             }
           } catch (err) {
-            console.error(`Failed to clear cart on attempt ${attempt}:`, err);
-            // Wait a bit before trying again
-            if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
+            console.error('Failed to clear cart:', err);
+            // Continue to order fetching even if cart clearing fails
           }
         }
         
-        if (!success) {
-          console.error('All cart clearing attempts failed');
-        }
-      }
-    };
-    
-    // Get order details based on payment intent ID
-    const fetchOrderDetails = async () => {
-      try {
-        // Fetch order details from our API
+        // Step 2: Fetch order details from our API after cart is cleared
+        console.log('Fetching order details...');
         const response = await fetch(`/api/checkout/order?payment_intent=${paymentIntentId}`);
         
         if (!response.ok) {
@@ -106,14 +96,12 @@ function OrderConfirmationContent() {
         }
         
         setOrderDetails(data);
-
-        // Clear cart after successfully getting order details
-        await handleCartClearing();
+        console.log('Order details retrieved successfully');
       } catch (error) {
-        console.error('Error fetching order details:', error);
+        console.error('Error during order confirmation:', error);
         setError(error instanceof Error ? error.message : 'Unknown error occurred');
         
-        // Create a fallback order with basic info
+        // Create a fallback order with minimal info - only for display purposes
         setOrderDetails({
           id: 'ORD-' + Math.floor(Math.random() * 10000),
           date: new Date().toISOString(),
@@ -134,9 +122,6 @@ function OrderConfirmationContent() {
           },
         });
         
-        // Still try to clear cart even if order details fetch fails
-        await handleCartClearing();
-        
         // Show error toast
         if (typeof window !== 'undefined') {
           toast({
@@ -150,7 +135,7 @@ function OrderConfirmationContent() {
       }
     };
 
-    fetchOrderDetails();
+    performOrderConfirmation();
     
     // Add a fallback cart clearing mechanism - try again after a delay
     // This helps in case the first attempts fail

@@ -30,10 +30,10 @@ export const metadata = {
   description: "View your order details",
 }
 
+type Params = Promise<{ id: string }>;
+
 interface OrderDetailPageProps {
-  params: {
-    id: string
-  }
+  params: Params
 }
 
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
@@ -58,7 +58,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   }
 
   const userId = user.id
-  const orderId = params.id
+  const { id: orderId } = await params
 
   // Fetch order details
   const order = await prisma.order.findUnique({
