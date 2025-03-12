@@ -1,12 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 import ProductGallery from '@/components/products/ProductGallery';
 import ProductInfo from '@/components/products/ProductInfo';
 import ProductReviews from '@/components/products/ProductReviews';
 import RelatedProducts from '@/components/products/RelatedProducts';
 import BackButton from '@/components/products/BackButton';
 import { Product, ProductVariant, Review, Category } from '@prisma/client';
+
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Define interfaces for product-related data
 interface ProductImage {
@@ -51,12 +55,12 @@ function serializeProduct(product: any) {
   
   return {
     ...product,
-    price: product.price ? Number(product.price) : null,
-    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+    price: product.price ? Number(product.price) / 100 : null,
+    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) / 100 : null,
     weight: product.weight ? Number(product.weight) : null,
     variants: product.variants ? product.variants.map((variant: any) => ({
       ...variant,
-      price: variant.price ? Number(variant.price) : null,
+      price: variant.price ? Number(variant.price) / 100 : null,
     })) : [],
     createdAt: product.createdAt ? product.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: product.updatedAt ? product.updatedAt.toISOString() : new Date().toISOString(),

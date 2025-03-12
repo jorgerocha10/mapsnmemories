@@ -44,8 +44,10 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
   // Serialize product data to handle Decimal values
   const serializedProduct = {
     ...product,
-    price: Number(product.price),
-    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+    price: Number(product.price) / 100,
+    compareAtPrice: product.compareAtPrice 
+      ? Number(product.compareAtPrice) / 100 
+      : null,
     weight: product.weight ? Number(product.weight) : null,
   };
 

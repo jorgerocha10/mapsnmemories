@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 
 // Interface for where clause
 interface ProductWhereClause {
   isVisible: boolean;
-  price: {
+  price?: {
     gte: number;
     lte: number;
   };
@@ -32,18 +32,29 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '12');
     const sort = searchParams.get('sort') || 'newest';
     const categories = searchParams.get('categories')?.split(',') || [];
-    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice') || '0') : 0;
-    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice') || '1000') : 1000;
+    
+    // Convert price filters from dollars to cents (store uses cents internally)
+    const minPriceDollars = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice') || '0') : 0;
+    const maxPriceDollars = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice') || '1000') : 1000;
+    
+    // Convert to cents for database query
+    const minPriceCents = Math.round(minPriceDollars * 100);
+    const maxPriceCents = Math.round(maxPriceDollars * 100);
+    
     const search = searchParams.get('search') || '';
     
     // Create the where clause
     const where: ProductWhereClause = {
       isVisible: true,
-      price: {
-        gte: minPrice,
-        lte: maxPrice,
-      },
     };
+    
+    // Only add price filter if we have actual values
+    if (minPriceCents > 0 || maxPriceCents < 100000) {
+      where.price = {
+        gte: minPriceCents,
+        lte: maxPriceCents,
+      };
+    }
     
     // Add category filter if provided
     if (categories.length > 0) {
@@ -96,6 +107,7 @@ export async function GET(request: NextRequest) {
       include: {
         images: {
           select: {
+            id: true,
             url: true,
             alt: true,
             position: true,
@@ -114,8 +126,17 @@ export async function GET(request: NextRequest) {
       },
     });
     
+    // Serialize products to convert price from cents to dollars
+    const serializedProducts = products.map(product => ({
+      ...product,
+      price: Number(product.price) / 100, // Convert cents to dollars
+      compareAtPrice: product.compareAtPrice 
+        ? Number(product.compareAtPrice) / 100 
+        : null,
+    }));
+    
     return NextResponse.json({
-      products,
+      products: serializedProducts,
       total,
       page,
       pageSize,

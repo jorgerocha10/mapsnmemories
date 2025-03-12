@@ -3,6 +3,10 @@ import { Metadata } from 'next';
 import ProductCatalog from '@/components/products/ProductCatalog';
 import ProductsLoading from '@/components/products/ProductsLoading';
 
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'Products | E-commerce Store',
   description: 'Browse our extensive collection of products',

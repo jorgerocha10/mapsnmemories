@@ -22,17 +22,22 @@ const productUpdateSchema = z.object({
       id: z.string().optional(),
       url: z.string().url({ message: "Invalid image URL" }),
       position: z.number().min(0),
+      alt: z.string().nullable().optional(),
     })
   ).optional(),
 });
 
+// Type for params
+type Params = Promise<{ id: string }>;
+
 // GET endpoint to fetch a single product
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
-    const { id } = params;
+    // Await params before using them
+    const { id } = await params;
 
     // Check authentication and admin role
     const session = await auth();
@@ -80,10 +85,11 @@ export async function GET(
 // PATCH endpoint to update a product
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
-    const { id } = params;
+    // Await params before using them
+    const { id } = await params;
 
     // Check authentication and admin role
     const session = await auth();
@@ -178,20 +184,39 @@ export async function PATCH(
         // Update or create images
         for (const image of data.images) {
           if (image.id) {
-            // Update existing image
-            await tx.productImage.update({
-              where: { id: image.id },
-              data: {
-                url: image.url,
-                position: image.position,
-              },
+            // Check if image exists before updating
+            const existingImage = await tx.productImage.findUnique({
+              where: { id: image.id }
             });
+            
+            if (existingImage) {
+              // Update existing image
+              await tx.productImage.update({
+                where: { id: image.id },
+                data: {
+                  url: image.url,
+                  position: image.position,
+                  alt: image.alt || `${data.name} product image ${image.position + 1}`,
+                },
+              });
+            } else {
+              // Create new image if ID doesn't exist
+              await tx.productImage.create({
+                data: {
+                  url: image.url,
+                  position: image.position,
+                  alt: image.alt || `${data.name} product image ${image.position + 1}`,
+                  productId: id,
+                },
+              });
+            }
           } else {
             // Create new image
             await tx.productImage.create({
               data: {
                 url: image.url,
                 position: image.position,
+                alt: image.alt || `${data.name} product image ${image.position + 1}`,
                 productId: id,
               },
             });
@@ -240,10 +265,11 @@ export async function PATCH(
 // DELETE endpoint to remove a product
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
-    const { id } = params;
+    // Await params before using them
+    const { id } = await params;
 
     // Check authentication and admin role
     const session = await auth();

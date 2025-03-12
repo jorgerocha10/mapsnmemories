@@ -50,7 +50,11 @@ export default function ProductGrid({ products, loading }: ProductGridProps) {
 }
 
 function ProductCard({ product }: { product: ProductWithImages }) {
+  // Ensure we have a valid alt text for accessibility
   const thumbnailImage = product.images[0] || { url: '/placeholder.png', alt: 'Product image' };
+  
+  // Make sure thumbnailImage.alt is never null or undefined
+  const imageAlt = thumbnailImage.alt || `${product.name} product image`;
   
   return (
     <Link href={`/products/${product.id}`} passHref>
@@ -58,7 +62,7 @@ function ProductCard({ product }: { product: ProductWithImages }) {
         <div className="aspect-square relative overflow-hidden">
           <Image
             src={thumbnailImage.url}
-            alt={thumbnailImage.alt}
+            alt={imageAlt}
             fill
             className="object-cover transition-transform hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

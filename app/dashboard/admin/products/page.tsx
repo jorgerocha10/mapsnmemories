@@ -76,6 +76,13 @@ export default async function AdminProductsPage() {
     take: 10,
   });
 
+  // Convert cents to dollars for display
+  const serializedProducts = products.map(product => ({
+    ...product,
+    price: Number(product.price) / 100,
+    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) / 100 : null,
+  }));
+
   // Function to render stock status badge
   const getStockStatusBadge = (inventory: number) => {
     if (inventory > 10) {
@@ -159,7 +166,7 @@ export default async function AdminProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {serializedProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>
                     <div className="relative h-10 w-10">
@@ -196,7 +203,7 @@ export default async function AdminProductsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {products.length === 0 && (
+              {serializedProducts.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-4">
                     No products found. Add your first product to get started.

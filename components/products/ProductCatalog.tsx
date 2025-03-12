@@ -65,19 +65,26 @@ export default function ProductCatalog({
           ...(filters.minPrice > 0 && { minPrice: filters.minPrice.toString() }),
           ...(filters.maxPrice < 1000 && { maxPrice: filters.maxPrice.toString() }),
           ...(searchParams.search && { search: searchParams.search }),
-        }).toString()}`);
+        }).toString()}`, {
+          // Add cache: 'no-store' to prevent caching
+          cache: 'no-store',
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
         
         const data = await response.json();
+        console.log('Fetched products:', data.products); // Debug log
         setProducts(data.products);
         setTotalProducts(data.total);
         
         // Fetch categories if not already loaded
         if (categories.length === 0) {
-          const categoriesResponse = await fetch('/api/categories');
+          const categoriesResponse = await fetch('/api/categories', {
+            // Add cache: 'no-store' to prevent caching
+            cache: 'no-store',
+          });
           if (!categoriesResponse.ok) {
             throw new Error('Failed to fetch categories');
           }

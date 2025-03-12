@@ -78,8 +78,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Serialize product data to handle Decimal fields
   const serializedProduct = {
     ...product,
-    price: Number(product.price),
-    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+    price: Number(product.price) / 100,
+    compareAtPrice: product.compareAtPrice 
+      ? Number(product.compareAtPrice) / 100 
+      : null,
     weight: product.weight ? Number(product.weight) : null,
   };
 

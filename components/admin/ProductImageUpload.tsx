@@ -12,6 +12,7 @@ interface ProductImage {
   id?: string;
   url: string;
   position: number;
+  alt?: string | null;
 }
 
 interface ProductImageUploadProps {
@@ -33,6 +34,7 @@ export default function ProductImageUpload({
         // Use ufsUrl instead of url (deprecated)
         url: file.ufsUrl || file.url, // fallback for compatibility
         position: images.length + idx,
+        alt: `Product image ${images.length + idx + 1}`,
       }));
       
       onImagesChange([...images, ...newImages]);
@@ -48,17 +50,32 @@ export default function ProductImageUpload({
   });
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
+    if (!e.target.files || e.target.files.length === 0) return;
     
-    // Convert FileList to an array
-    const filesArray = Array.from(fileList);
+    setIsUploading(true);
     
-    // Start the upload
-    await startUpload(filesArray);
-    
-    // Reset the input
-    e.target.value = '';
+    try {
+      const res = await startUpload(Array.from(e.target.files));
+      
+      if (res && res.length > 0) {
+        const newImages = [...images];
+        
+        res.forEach((uploadedFile) => {
+          // Add new image with alt text
+          newImages.push({
+            url: uploadedFile.url,
+            position: newImages.length,
+            alt: `Product image ${newImages.length + 1}`,
+          });
+        });
+        
+        onImagesChange(newImages);
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -88,7 +105,7 @@ export default function ProductImageUpload({
               <div className="relative aspect-square mb-2">
                 <Image
                   src={image.url}
-                  alt={`Product image ${index + 1}`}
+                  alt={image.alt || `Product image ${index + 1}`}
                   fill
                   className="object-cover rounded-md"
                 />

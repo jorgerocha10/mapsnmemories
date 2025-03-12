@@ -21,6 +21,7 @@ const productCreateSchema = z.object({
     z.object({
       url: z.string().url({ message: "Invalid image URL" }),
       position: z.number().min(0),
+      alt: z.string().nullable().optional(),
     })
   ).optional(),
 });
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
                 create: data.images.map((image) => ({
                   url: image.url,
                   position: image.position,
+                  alt: image.alt || `${data.name} product image`,
                 })),
               },
             }
