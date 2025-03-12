@@ -34,7 +34,7 @@
 
 ## Scratchpad
 
-### 1. Project Setup and Configuration [ ]
+### 1.Project Setup and Configuration [ ]
 
 - [x] Initialize Next.js 15 project with TypeScript
   - [x] Use `npx create-next-app@latest --typescript` with recommended settings
