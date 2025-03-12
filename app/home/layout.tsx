@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Footer from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: "Maps & Memories | Home",
@@ -14,7 +13,6 @@ export default function HomeLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">{children}</main>
-      <Footer />
     </div>
   );
 } 

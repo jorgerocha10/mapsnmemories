@@ -1,4 +1,3 @@
-import Footer from "@/components/layout/footer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +13,6 @@ export default function ProductsLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">{children}</main>
-      <Footer />
     </div>
   );
 } 

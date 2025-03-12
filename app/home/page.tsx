@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import BannerCarousel from "@/components/home/BannerCarousel";
+import { ClientFeaturedProducts } from "@/components/home/ClientFeaturedProducts";
+import { MapPin, Award, Pencil, Gift, Quote } from "lucide-react";
 
 // Add explicit exports to help with route recognition
 export const dynamic = 'force-static';
@@ -18,76 +20,89 @@ export const dynamic = 'force-static';
 export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="mb-16">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Maps & Memories</h1>
-        <p className="mt-6 text-lg text-muted-foreground">Your one-stop shop for high-quality clothing and accessories.</p>
-        <div className="mt-10 flex items-center gap-x-6">
-          <Button size="lg">Shop Now</Button>
-          <Button variant="outline" size="lg">Learn More</Button>
-        </div>
-      </div>
       
       {/* Banner Carousel */}
       <section className="mb-16">
         <BannerCarousel />
       </section>
-      
+
       <section className="mb-16">
-        <h2 className="mb-6 text-2xl font-bold">Featured Products</h2>
+        <h2 className="mb-6 text-2xl font-bold">Why Choose Us</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Featured products will go here */}
-          <div className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="aspect-square w-full bg-muted" />
-            <div className="mt-4">
-              <h3 className="font-medium">Product Name</h3>
-              <p className="text-sm text-muted-foreground">$99.99</p>
+          {/* Feature Cards */}
+          <div className="flex flex-col items-center text-center rounded-lg border bg-card p-6 shadow-sm">
+            <div className="mb-4 rounded-full bg-primary/10 p-3">
+              <MapPin className="h-6 w-6 text-amber-600" />
             </div>
+            <h3 className="mb-2 text-xl font-bold">Customizable Designs</h3>
+            <p className="text-muted-foreground">
+              Choose any location, size, and engraving details.
+            </p>
           </div>
-          <div className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="aspect-square w-full bg-muted" />
-            <div className="mt-4">
-              <h3 className="font-medium">Product Name</h3>
-              <p className="text-sm text-muted-foreground">$99.99</p>
+          
+          <div className="flex flex-col items-center text-center rounded-lg border bg-card p-6 shadow-sm">
+            <div className="mb-4 rounded-full bg-primary/10 p-3">
+              <Award className="h-6 w-6 text-amber-600" />
             </div>
+            <h3 className="mb-2 text-xl font-bold">Premium Craftsmanship</h3>
+            <p className="text-muted-foreground">
+              Precision laser-cut and engraved on high-quality wood.
+            </p>
           </div>
-          <div className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="aspect-square w-full bg-muted" />
-            <div className="mt-4">
-              <h3 className="font-medium">Product Name</h3>
-              <p className="text-sm text-muted-foreground">$99.99</p>
+          
+          <div className="flex flex-col items-center text-center rounded-lg border bg-card p-6 shadow-sm">
+            <div className="mb-4 rounded-full bg-primary/10 p-3">
+              <Pencil className="h-6 w-6 text-amber-600" />
             </div>
+            <h3 className="mb-2 text-xl font-bold">Personalized Touch</h3>
+            <p className="text-muted-foreground">
+              Add meaningful messages, names, or coordinates.
+            </p>
           </div>
-          <div className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="aspect-square w-full bg-muted" />
-            <div className="mt-4">
-              <h3 className="font-medium">Product Name</h3>
-              <p className="text-sm text-muted-foreground">$99.99</p>
+          
+          <div className="flex flex-col items-center text-center rounded-lg border bg-card p-6 shadow-sm">
+            <div className="mb-4 rounded-full bg-primary/10 p-3">
+              <Gift className="h-6 w-6 text-amber-600" />
             </div>
+            <h3 className="mb-2 text-xl font-bold">Perfect Gift</h3>
+            <p className="text-muted-foreground">
+              Ideal for anniversaries, weddings, and milestone moments.
+            </p>
           </div>
         </div>
       </section>
       
       <section className="mb-16">
-        <h2 className="mb-6 text-2xl font-bold">Categories</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {/* Categories will go here */}
-          <div className="relative aspect-video overflow-hidden rounded-lg border">
-            <div className="absolute inset-0 bg-muted" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-xl font-bold text-white">T-shirts</h3>
-            </div>
+        <h2 className="mb-6 text-2xl font-bold">Featured Products</h2>
+        <ClientFeaturedProducts />
+      </section>
+      
+      {/* Customer Testimonials */}
+      <section className="mb-16">
+        <h2 className="mb-6 text-2xl font-bold text-center">What Our Customers Say</h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Testimonial 1 */}
+          <div className="flex flex-col justify-between rounded-lg border bg-card p-6 shadow-sm">
+            <p className="mb-4 italic text-muted-foreground">
+              "Absolutely stunning! The perfect anniversary gift."
+            </p>
+            <p className="font-medium">Sarah T.</p>
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-lg border">
-            <div className="absolute inset-0 bg-muted" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-xl font-bold text-white">Jeans</h3>
-            </div>
+          
+          {/* Testimonial 2 */}
+          <div className="flex flex-col justify-between rounded-lg border bg-card p-6 shadow-sm">
+            <p className="mb-4 italic text-muted-foreground">
+              "The craftsmanship is incredible. It's a keepsake we'll cherish forever."
+            </p>
+            <p className="font-medium">James W.</p>
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-lg border">
-            <div className="absolute inset-0 bg-muted" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-xl font-bold text-white">Shoes</h3>
-            </div>
+          
+          {/* Testimonial 3 */}
+          <div className="flex flex-col justify-between rounded-lg border bg-card p-6 shadow-sm">
+            <p className="mb-4 italic text-muted-foreground">
+              "I gifted one to my parents, and they were blown away!"
+            </p>
+            <p className="font-medium">Emily L.</p>
           </div>
         </div>
       </section>

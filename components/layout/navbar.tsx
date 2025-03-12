@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
@@ -44,8 +45,14 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <ShoppingBag className="h-6 w-6" />
-          <span className="font-semibold text-lg">Maps N Memories</span>
+          <Image 
+            src="/images/Logo_4.png" 
+            alt="Maps N Memories Logo" 
+            width={250} 
+            height={40} 
+            className="h-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -94,7 +101,7 @@ export function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/orders" className="cursor-pointer">
-                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    <ShoppingCart className="mr-2 h-4 w-4" />
                     <span>My Orders</span>
                   </Link>
                 </DropdownMenuItem>
